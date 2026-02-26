@@ -106,6 +106,6 @@ export async function getCasesPublic() {
 }
 
 export async function getCases(options = {}) {
-  const { populate = "deep", pageSize = 100000 } = options;
+  const { populate = "*", pageSize = 100000 } = options;
   return fetchWithAuth(`/api/cases?populate=${populate}&pagination[pageSize]=${pageSize}`);
 }
