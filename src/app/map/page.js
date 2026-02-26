@@ -8,12 +8,9 @@ async function getData() {
 
 export default async function Page() {
   const data = await getData();
-
-  console.log(data.data[0].crime);
-
-  return <main>
-    <div className="mb-3">
+  return (
+    <main className="py-2 py-md-3">
       <Map cases={data.data} />
-    </div>
-  </main>
+    </main>
+  );
 }

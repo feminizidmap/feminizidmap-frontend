@@ -1,7 +1,149 @@
-.mapboxgl-map {
-  min-height: 500px !important;
+.cases-map-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.9fr) minmax(320px, 1fr);
+  gap: 1rem;
+  align-items: stretch;
 }
 
-.mapboxgl-ctrl-logo {
-  display: none !important;
+.cases-map-shell {
+  min-height: 560px;
+  overflow: hidden;
+  border: 1px solid #dbe1ea;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+  background: #f7f8fa;
+}
+
+.cases-map-canvas {
+  width: 100%;
+  height: 100%;
+  min-height: 560px;
+}
+
+.cases-list-panel {
+  min-height: 560px;
+  border: 1px solid #dbe1ea;
+  background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.cases-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.cases-list-kicker {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6c7788;
+}
+
+.cases-list-title {
+  margin: 0.25rem 0 0;
+  font-size: 1.05rem;
+  line-height: 1.25;
+  color: #172033;
+}
+
+.cases-list-close {
+  border: 1px solid #c5cedd;
+  background: #fff;
+  color: #1f2c43;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.cases-list-close:hover {
+  border-color: #9daac0;
+  background: #f3f6fc;
+}
+
+.cases-list-scroll {
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.cases-list-empty {
+  margin: 0.25rem 0 0;
+  color: #5b6677;
+  font-size: 0.95rem;
+}
+
+.case-card {
+  margin-bottom: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid #e1e6f0;
+  background: #fff;
+}
+
+.case-card-meta {
+  margin: 0 0 0.45rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  color: #6c7788;
+}
+
+.case-card-description {
+  margin: 0;
+  color: #1f2c43;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.case-details {
+  margin-top: 0.65rem;
+}
+
+.case-details summary {
+  cursor: pointer;
+  color: #243455;
+  font-weight: 600;
+}
+
+.case-details-content {
+  margin-top: 0.75rem;
+}
+
+.case-details-row {
+  margin-bottom: 0.45rem;
+  color: #273349;
+  font-size: 0.9rem;
+}
+
+.case-sources {
+  margin: 0;
+  padding-left: 1rem;
+}
+
+.case-sources a {
+  color: #2f4f8f;
+  word-break: break-word;
+}
+
+.maplibregl-ctrl-group {
+  overflow: hidden;
+  border: 1px solid #d3dbe8 !important;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.15) !important;
+}
+
+@media (max-width: 1024px) {
+  .cases-map-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .cases-map-shell,
+  .cases-map-canvas,
+  .cases-list-panel {
+    min-height: 480px;
+  }
 }

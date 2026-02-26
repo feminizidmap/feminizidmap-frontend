@@ -76,11 +76,12 @@ function sortCasesByDateDesc(caseList) {
 export default function CasesMap({
   cases = [],
   language = "de",
-  height = "calc(100vh - 400px)",
+  height = "calc(100vh - 220px)",
   pmtilesUrl = "/germany9.pmtiles",
 }) {
   const mapContainer = useRef(null);
-  const mapRef = useRef(null);
+  const map = useRef(null);
+  const geojsonRef = useRef({ type: "FeatureCollection", features: [] });
   const casesByIdRef = useRef(new Map());
   const languageRef = useRef(language);
   const [selectedCases, setSelectedCases] = useState([]);
@@ -121,6 +122,10 @@ export default function CasesMap({
   );
 
   useEffect(() => {
+    geojsonRef.current = geojsonData;
+  }, [geojsonData]);
+
+  useEffect(() => {
     casesByIdRef.current = casesById;
   }, [casesById]);
 
@@ -129,7 +134,7 @@ export default function CasesMap({
   }, [language]);
 
   useEffect(() => {
-    if (mapRef.current || !mapContainer.current) {
+    if (map.current || !mapContainer.current) {
       return;
     }
 
@@ -139,9 +144,9 @@ export default function CasesMap({
       protocolRegistered = true;
     }
 
-    const map = new maplibregl.Map({
+    map.current = new maplibregl.Map({
       container: mapContainer.current,
-      zoom: 5.5,
+      zoom: 5,
       minZoom: 2,
       maxZoom: 12,
       center: [10.5, 51.3],
@@ -156,26 +161,25 @@ export default function CasesMap({
             attribution: "© OpenStreetMap",
           },
         },
-        layers: layers("protomaps", namedFlavor("grayscale"), { lang: language }),
+        layers: layers("protomaps", namedFlavor("grayscale"), { lang: languageRef.current }),
       },
     });
 
-    mapRef.current = map;
-    map.addControl(new maplibregl.NavigationControl(), "top-right");
-    map.doubleClickZoom.disable();
+    map.current.addControl(new maplibregl.NavigationControl(), "top-right");
+    map.current.doubleClickZoom.disable();
 
-    map.on("load", () => {
+    map.current.on("load", () => {
       setMapLoaded(true);
 
-      map.addSource("cases", {
+      map.current.addSource("cases", {
         type: "geojson",
-        data: geojsonData,
+        data: geojsonRef.current,
         cluster: true,
         clusterMaxZoom: 14,
         clusterRadius: 50,
       });
 
-      map.addLayer({
+      map.current.addLayer({
         id: "clusters",
         type: "circle",
         source: "cases",
@@ -189,7 +193,7 @@ export default function CasesMap({
         },
       });
 
-      map.addLayer({
+      map.current.addLayer({
         id: "cluster-count",
         type: "symbol",
         source: "cases",
@@ -206,7 +210,7 @@ export default function CasesMap({
         },
       });
 
-      map.addLayer({
+      map.current.addLayer({
         id: "unclustered-point",
         type: "circle",
         source: "cases",
@@ -219,8 +223,8 @@ export default function CasesMap({
         },
       });
 
-      map.on("click", "clusters", async (e) => {
-        const features = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
+      map.current.on("click", "clusters", async (e) => {
+        const features = map.current.queryRenderedFeatures(e.point, { layers: ["clusters"] });
         const clusterFeature = features[0];
         if (!clusterFeature?.properties) {
           return;
@@ -228,7 +232,7 @@ export default function CasesMap({
 
         const clusterId = clusterFeature.properties.cluster_id;
         const pointCount = clusterFeature.properties.point_count;
-        const source = map.getSource("cases");
+        const source = map.current.getSource("cases");
         if (!source || typeof source.getClusterLeaves !== "function") {
           return;
         }
@@ -244,12 +248,11 @@ export default function CasesMap({
             languageRef.current === "de" ? `${selected.length} Faelle angeklickt` : `${selected.length} cases clicked`
           );
         } catch (error) {
-          // Keep the map usable even if cluster leaf lookup fails.
           console.error("Error getting cluster leaves:", error);
         }
       });
 
-      map.on("click", "unclustered-point", (e) => {
+      map.current.on("click", "unclustered-point", (e) => {
         const selectedId = e.features?.[0]?.properties?.id;
         if (!selectedId) {
           return;
@@ -264,68 +267,44 @@ export default function CasesMap({
         setPanelTitle(languageRef.current === "de" ? "1 Fall angeklickt" : "1 case clicked");
       });
 
-      map.on("click", (e) => {
-        const clusters = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
-        const points = map.queryRenderedFeatures(e.point, { layers: ["unclustered-point"] });
+      map.current.on("click", (e) => {
+        const clusters = map.current.queryRenderedFeatures(e.point, { layers: ["clusters"] });
+        const points = map.current.queryRenderedFeatures(e.point, { layers: ["unclustered-point"] });
         if (clusters.length === 0 && points.length === 0) {
           setSelectedCases([]);
           setPanelTitle("");
         }
       });
 
-      map.on("mouseenter", "clusters", () => {
-        map.getCanvas().style.cursor = "pointer";
+      map.current.on("mouseenter", "clusters", () => {
+        map.current.getCanvas().style.cursor = "pointer";
       });
-      map.on("mouseleave", "clusters", () => {
-        map.getCanvas().style.cursor = "";
+      map.current.on("mouseleave", "clusters", () => {
+        map.current.getCanvas().style.cursor = "";
       });
-      map.on("mouseenter", "unclustered-point", () => {
-        map.getCanvas().style.cursor = "pointer";
+      map.current.on("mouseenter", "unclustered-point", () => {
+        map.current.getCanvas().style.cursor = "pointer";
       });
-      map.on("mouseleave", "unclustered-point", () => {
-        map.getCanvas().style.cursor = "";
-      });
-
-      map.on("dblclick", "clusters", (e) => {
-        const features = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
-        const clusterFeature = features[0];
-        if (!clusterFeature?.properties?.cluster_id) {
-          return;
-        }
-
-        const source = map.getSource("cases");
-        if (!source || typeof source.getClusterExpansionZoom !== "function") {
-          return;
-        }
-
-        source.getClusterExpansionZoom(clusterFeature.properties.cluster_id, (error, zoom) => {
-          if (error) {
-            return;
-          }
-
-          map.easeTo({
-            center: clusterFeature.geometry.coordinates,
-            zoom,
-          });
-        });
+      map.current.on("mouseleave", "unclustered-point", () => {
+        map.current.getCanvas().style.cursor = "";
       });
     });
 
     return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
       }
       setMapLoaded(false);
     };
-  }, [geojsonData, language, pmtilesUrl]);
+  }, [pmtilesUrl]);
 
   useEffect(() => {
-    if (!mapLoaded || !mapRef.current) {
+    if (!map.current || !mapLoaded || !map.current.getSource("cases")) {
       return;
     }
 
-    const source = mapRef.current.getSource("cases");
+    const source = map.current.getSource("cases");
     if (!source || typeof source.setData !== "function") {
       return;
     }
@@ -336,31 +315,23 @@ export default function CasesMap({
   }, [geojsonData, mapLoaded]);
 
   return (
-    <div style={{ position: "relative", width: "100%", height }}>
-      <div ref={mapContainer} style={{ width: "100%", height: "100%" }} />
+    <div className="cases-map-layout" style={{ minHeight: height }}>
+      <div className="cases-map-shell">
+        <div ref={mapContainer} className="cases-map-canvas" />
+      </div>
 
-      {selectedCases.length > 0 && (
-        <div
-          style={{
-            position: "absolute",
-            top: "0.5rem",
-            left: "0.5rem",
-            bottom: "0.5rem",
-            width: "22rem",
-            maxWidth: "calc(100% - 1rem)",
-            overflowY: "auto",
-            backgroundColor: "#f8f9fa",
-            border: "1px solid rgba(0, 0, 0, 0.12)",
-            boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15)",
-            zIndex: 5,
-            padding: "0.75rem",
-          }}
-        >
-          <div className="d-flex justify-content-between align-items-center mb-2">
-            <strong>{panelTitle}</strong>
+      <aside className="cases-list-panel">
+        <div className="cases-list-header">
+          <div>
+            <p className="cases-list-kicker">{language === "de" ? "Auswahl" : "Selection"}</p>
+            <h2 className="cases-list-title">
+              {selectedCases.length > 0 ? panelTitle : language === "de" ? "Noch keine Auswahl" : "No selection yet"}
+            </h2>
+          </div>
+          {selectedCases.length > 0 && (
             <button
               type="button"
-              className="btn btn-sm btn-outline-secondary"
+              className="cases-list-close"
               onClick={() => {
                 setSelectedCases([]);
                 setPanelTitle("");
@@ -368,13 +339,23 @@ export default function CasesMap({
             >
               {language === "de" ? "Schliessen" : "Close"}
             </button>
-          </div>
-
-          {selectedCases.map((caseItem) => (
-            <CaseDetails key={caseItem.id} props={caseItem} />
-          ))}
+          )}
         </div>
-      )}
+
+        {selectedCases.length > 0 ? (
+          <div className="cases-list-scroll">
+            {selectedCases.map((caseItem) => (
+              <CaseDetails key={caseItem.id} props={caseItem} />
+            ))}
+          </div>
+        ) : (
+          <p className="cases-list-empty">
+            {language === "de"
+              ? "Klicke auf einen Marker oder Cluster, um Fallinformationen anzuzeigen."
+              : "Click a marker or cluster to show case details."}
+          </p>
+        )}
+      </aside>
     </div>
   );
 }
