@@ -1,10 +1,9 @@
 import "./page.css";
 import CasesList from "./CasesList";
+import { getCases } from "../../services/api";
 
 async function getData() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_URL}/api/cases?populate=deep&pagination[pageSize]=20000`);
-  if (!res.ok) { throw new Error('Failed to fetch data') }
-  return res.json()
+  return getCases({ populate: "*", pageSize: 20000 });
 }
 
 export default async function Page() {

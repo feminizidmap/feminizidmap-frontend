@@ -6,6 +6,35 @@ import CaseDetails from '../CaseDetails';
 import Map, { Source, Layer } from 'react-map-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
+function getCoordinates(caseItem) {
+  const nestedCoords = caseItem?.address?.coordinates?.coordinates;
+
+  if (Array.isArray(nestedCoords) && nestedCoords.length >= 2) {
+    return [nestedCoords[0], nestedCoords[1]];
+  }
+
+  if (nestedCoords && typeof nestedCoords === "object") {
+    const lng = nestedCoords.lng ?? nestedCoords.lon;
+    const lat = nestedCoords.lat;
+
+    if (typeof lng === "number" && typeof lat === "number") {
+      return [lng, lat];
+    }
+  }
+
+  const flatCoords = caseItem?.address?.coordinates;
+  if (flatCoords && typeof flatCoords === "object") {
+    const lng = flatCoords.lng ?? flatCoords.lon;
+    const lat = flatCoords.lat;
+
+    if (typeof lng === "number" && typeof lat === "number") {
+      return [lng, lat];
+    }
+  }
+
+  return null;
+}
+
 export default function CasesMap({ cases }) {
   const mapRef = useRef();
 
@@ -17,17 +46,23 @@ export default function CasesMap({ cases }) {
 
   const geojson = {
     type: 'FeatureCollection',
-    features: cases.map((c) => ({
-      type: 'Feature',
-      properties: { ...c },
-      geometry: {
-        type: 'Point',
-        coordinates: [
-          c.address?.coordinates?.coordinates?.lng || 0,
-          c.address?.coordinates?.coordinates?.lat || 0,
-        ],
-      },
-    })),
+    features: cases
+      .map((c) => {
+        const coordinates = getCoordinates(c);
+        if (!coordinates) {
+          return null;
+        }
+
+        return {
+          type: 'Feature',
+          properties: { ...c },
+          geometry: {
+            type: 'Point',
+            coordinates,
+          },
+        };
+      })
+      .filter(Boolean),
   };
 
   const setCases = (event) => {

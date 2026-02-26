@@ -1,14 +1,15 @@
 import Map from "./map";
 import "./page.css";
+import { getCases } from "../../services/api";
 
 async function getData() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_URL}/api/cases?populate=deep&pagination[pageSize]=20000`);
-  if (!res.ok) { throw new Error('Failed to fetch data') }
-  return res.json()
+  return getCases({ populate: "*", pageSize: 20000 });
 }
 
 export default async function Page() {
   const data = await getData();
+
+  console.log(data.data[0].crime);
 
   return <main>
     <div className="mb-3">
