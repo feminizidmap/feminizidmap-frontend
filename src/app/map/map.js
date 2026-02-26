@@ -76,7 +76,7 @@ function sortCasesByDateDesc(caseList) {
 export default function CasesMap({
   cases = [],
   language = "de",
-  height = "calc(100vh - 220px)",
+  height = "70vh",
   pmtilesUrl = "/germany9.pmtiles",
 }) {
   const mapContainer = useRef(null);
@@ -315,7 +315,7 @@ export default function CasesMap({
   }, [geojsonData, mapLoaded]);
 
   return (
-    <div className="cases-map-layout" style={{ minHeight: height }}>
+    <div className="cases-map-layout" style={{ "--cases-panel-height": height }}>
       <div className="cases-map-shell">
         <div ref={mapContainer} className="cases-map-canvas" />
       </div>

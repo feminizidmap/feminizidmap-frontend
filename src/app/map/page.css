@@ -6,24 +6,23 @@
 }
 
 .cases-map-shell {
-  min-height: 560px;
+  height: var(--cases-panel-height, 70vh);
   overflow: hidden;
-  border: 1px solid #dbe1ea;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
-  background: #f7f8fa;
+  border: none;
+  box-shadow: none;
+  background: #ffffff;
 }
 
 .cases-map-canvas {
   width: 100%;
   height: 100%;
-  min-height: 560px;
 }
 
 .cases-list-panel {
-  min-height: 560px;
-  border: 1px solid #dbe1ea;
-  background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  height: var(--cases-panel-height, 70vh);
+  border: none;
+  background: #ffffff;
+  box-shadow: none;
   padding: 1rem;
   display: flex;
   flex-direction: column;
@@ -54,7 +53,7 @@
 }
 
 .cases-list-close {
-  border: 1px solid #c5cedd;
+  border: 1px solid #d9dee8;
   background: #fff;
   color: #1f2c43;
   padding: 0.35rem 0.7rem;
@@ -64,11 +63,13 @@
 }
 
 .cases-list-close:hover {
-  border-color: #9daac0;
-  background: #f3f6fc;
+  border-color: #c5cedd;
+  background: #ffffff;
 }
 
 .cases-list-scroll {
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding-right: 0.25rem;
 }
@@ -82,7 +83,8 @@
 .case-card {
   margin-bottom: 0.75rem;
   padding: 0.85rem;
-  border: 1px solid #e1e6f0;
+  border: none;
+  border-top: 1px solid #eceff4;
   background: #fff;
 }
 
@@ -132,8 +134,8 @@
 
 .maplibregl-ctrl-group {
   overflow: hidden;
-  border: 1px solid #d3dbe8 !important;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.15) !important;
+  border: 1px solid #d9dee8 !important;
+  box-shadow: none !important;
 }
 
 @media (max-width: 1024px) {
@@ -144,6 +146,6 @@
   .cases-map-shell,
   .cases-map-canvas,
   .cases-list-panel {
-    min-height: 480px;
+    height: var(--cases-panel-height, 70vh);
   }
 }
