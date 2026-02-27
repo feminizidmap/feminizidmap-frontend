@@ -7,8 +7,6 @@ import { layers, namedFlavor } from "@protomaps/basemaps";
 import "maplibre-gl/dist/maplibre-gl.css";
 import CaseDetails from "../CaseDetails";
 
-const PMTILES_PROTOCOL = "pmtiles";
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 let protocolRegistered = false;
 
 function normalizeCoordinate(value, isLatitude) {
@@ -141,7 +139,7 @@ export default function CasesMap({
 
     if (!protocolRegistered) {
       const protocol = new Protocol();
-      maplibregl.addProtocol(PMTILES_PROTOCOL, protocol.tile);
+      maplibregl.addProtocol('pmtiles', protocol.tile);
       protocolRegistered = true;
     }
 
@@ -158,7 +156,7 @@ export default function CasesMap({
         sources: {
           protomaps: {
             type: "vector",
-            url: `${PMTILES_PROTOCOL}://${BASE_PATH}${pmtilesUrl}`,
+            url: `pmtiles://${pmtilesUrl}`,
             attribution: "© OpenStreetMap",
           },
         },
