@@ -1,34 +1,34 @@
 "use client"
 
-import { Row, Col } from 'react-bootstrap';
-import { useState } from 'react';
+import { useMemo } from 'react';
 import CaseDetails from '../CaseDetails';
 
+function sortCasesByDateDesc(caseList) {
+  return [...caseList].sort((a, b) => {
+    const dateA = Date.parse(a?.crime_date || "");
+    const dateB = Date.parse(b?.crime_date || "");
+    if (!Number.isFinite(dateA) && !Number.isFinite(dateB)) return 0;
+    if (!Number.isFinite(dateA)) return 1;
+    if (!Number.isFinite(dateB)) return -1;
+    return dateB - dateA;
+  });
+}
+
 export default function CasesList({ cases }) {
-  const [activeCase, setActiveCase] = useState(null);
   const caseItems = cases?.data || [];
+  const sorted = useMemo(() => sortCasesByDateDesc(caseItems), [caseItems]);
 
-  const CaseCard = ({ c }) => {
-    const activeClass = activeCase && activeCase.id === c.id ? "active" : "";
-
-    return <div onClick={() => setActiveCase(c)}>
-      <div className={"case-card p-3 my-3 d-flex flex-column align-items-center justify-content-center " + activeClass}>
-        <div>{c.crime_date}</div>
-        <h2 className="fs-3">{c.address?.city || "Unknown location"}</h2>
+  return (
+    <div className="database-layout">
+      <div className="database-header">
+        <p className="cases-list-kicker">Datenbank</p>
+        <h2 className="cases-list-title">{sorted.length} Faelle</h2>
+      </div>
+      <div className="database-scroll">
+        {sorted.map((caseItem) => (
+          <CaseDetails key={caseItem.id} props={caseItem} />
+        ))}
       </div>
     </div>
-  }
-
-  return <Row>
-    <Col xs={12} md={5} style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 350px)' }}>
-      {caseItems.map((c) => (
-        <CaseCard key={c.id} c={c} />
-      ))}
-    </Col>
-    <Col xs={12} md={7}>
-      {activeCase && <div className="mt-3 ms-md-4">
-        <CaseDetails props={activeCase} />
-      </div>}
-    </Col>
-  </Row>
+  );
 }

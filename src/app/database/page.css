@@ -1,11 +1,136 @@
-.case-card {
-  background: #e1e1e1;
+.database-layout {
+  margin: 0;
+  padding: 2rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  font-size: 1.25rem;
+}
+
+.database-header {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid #172033;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+}
+
+.database-header .cases-list-kicker {
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.database-header .cases-list-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.database-scroll {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  gap: 0;
+}
+
+.database-scroll .case-card {
+  margin: 0;
+  padding: 1.25rem 1rem;
+  border: none;
+  border-bottom: 1px solid #e4e8ef;
+  background: transparent;
+  transition: background 0.15s ease;
+}
+
+.database-scroll .case-card:hover {
+  background: #f6f8fb;
+}
+
+.database-scroll .case-card:last-child {
+  border-bottom: none;
+}
+
+.database-scroll .case-card-meta {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #384B70;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.35rem;
+}
+
+.database-scroll .case-card-description {
+  font-size: 1.15rem;
+  line-height: 1.55;
+  color: #2a3650;
+}
+
+.database-scroll .case-details {
+  margin-top: 0.75rem;
+}
+
+.database-scroll .case-details summary {
+  font-size: 0.95rem;
+  color: #384B70;
+  font-weight: 600;
+  padding: 0.3rem 0;
   cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease;
 }
 
-.case-card.active {
-  background: grey;
-  color: white;
-  border-radius: 20px;
+.database-scroll .case-details summary:hover {
+  color: #1f2c43;
 }
 
+.database-scroll .case-details[open] summary {
+  margin-bottom: 0.5rem;
+}
+
+.database-scroll .case-details-content {
+  padding: 0.75rem 1rem;
+  background: #f3f5f9;
+  border-left: 3px solid #384B70;
+  margin-top: 0;
+}
+
+.database-scroll .case-details-row {
+  font-size: 1.05rem;
+  margin-bottom: 0.35rem;
+  color: #2a3650;
+}
+
+.database-scroll .case-details-row b {
+  font-weight: 700;
+  color: #172033;
+}
+
+.database-scroll .case-sources {
+  padding-left: 1.25rem;
+}
+
+.database-scroll .case-sources a {
+  color: #384B70;
+  text-decoration: underline;
+  text-decoration-color: #b0bdd0;
+  text-underline-offset: 2px;
+  transition: text-decoration-color 0.15s ease;
+}
+
+.database-scroll .case-sources a:hover {
+  text-decoration-color: #384B70;
+}
+
+@media (max-width: 768px) {
+  .database-layout {
+    padding: 1.25rem 1rem;
+  }
+
+  .database-header .cases-list-title {
+    font-size: 1.35rem;
+  }
+
+  .database-scroll .case-card-description {
+    font-size: 1.05rem;
+  }
+}
