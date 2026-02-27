@@ -152,12 +152,10 @@ export default function CasesMap({
       maxBounds: [[2.0, 47.0], [18.0, 55.0]],
       style: {
         version: 8,
-        glyphs: "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf",
         sources: {
           protomaps: {
             type: "vector",
             url: `pmtiles://${pmtilesUrl}`,
-            attribution: "© OpenStreetMap",
           },
         },
         layers: layers("protomaps", namedFlavor("grayscale"), { lang: languageRef.current }),
@@ -184,11 +182,9 @@ export default function CasesMap({
         source: "cases",
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": ["step", ["get", "point_count"], "#384B70", 10, "#2F4060", 20, "#263550", 50, "#1D2A40"],
+          "circle-color": ["step", ["get", "point_count"], "#CE5BFF", 10, "#B628F3", 20, "#B216F5", 50, "#A200E8"],
           "circle-radius": ["step", ["get", "point_count"], 14, 10, 20, 20, 26, 50, 32],
-          "circle-opacity": ["step", ["get", "point_count"], 0.8, 10, 0.9, 20, 0.9, 50, 1],
-          "circle-stroke-width": 1,
-          "circle-stroke-color": "#5A6D8A",
+          "circle-opacity": 1
         },
       });
 
@@ -200,7 +196,7 @@ export default function CasesMap({
         layout: {
           "text-field": "{point_count_abbreviated}",
           "text-font": ["Noto Sans Medium"],
-          "text-size": 12,
+          "text-size": ["step", ["get", "point_count"], 12, 10, 14, 20, 16, 50, 18],
           "text-allow-overlap": true,
           "text-ignore-placement": true,
         },
@@ -215,10 +211,10 @@ export default function CasesMap({
         source: "cases",
         filter: ["!", ["has", "point_count"]],
         paint: {
-          "circle-color": "#384B70",
+          "circle-color": "#4a9ef5",
           "circle-radius": 6,
           "circle-stroke-width": 1,
-          "circle-stroke-color": "#5A6D8A",
+          "circle-stroke-color": "#2a6fc9",
         },
       });
 
