@@ -152,10 +152,12 @@ export default function CasesMap({
       maxBounds: [[2.0, 47.0], [18.0, 55.0]],
       style: {
         version: 8,
+        glyphs: 'https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf',
         sources: {
           protomaps: {
             type: "vector",
             url: `pmtiles://${pmtilesUrl}`,
+            attribution: '© OpenStreetMap',
           },
         },
         layers: layers("protomaps", namedFlavor("grayscale"), { lang: languageRef.current }),
