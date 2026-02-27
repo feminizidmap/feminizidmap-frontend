@@ -8,6 +8,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import CaseDetails from "../CaseDetails";
 
 const PMTILES_PROTOCOL = "pmtiles";
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || "";
 let protocolRegistered = false;
 
 function normalizeCoordinate(value, isLatitude) {
@@ -157,7 +158,7 @@ export default function CasesMap({
         sources: {
           protomaps: {
             type: "vector",
-            url: `${PMTILES_PROTOCOL}://${pmtilesUrl}`,
+            url: `${PMTILES_PROTOCOL}://${BASE_PATH}${pmtilesUrl}`,
             attribution: "© OpenStreetMap",
           },
         },
