@@ -2,6 +2,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://feminizidmap-backend
 const API_TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
 
 function unwrapEntity(entity) {
+
+  console.log(entity)
+  
   if (!entity) {
     return entity;
   }
