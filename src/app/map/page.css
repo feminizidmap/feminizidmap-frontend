@@ -6,7 +6,7 @@
 }
 
 .cases-map-shell {
-  height: var(--cases-panel-height, 70vh);
+  height: 100vh;
   overflow: hidden;
   border: none;
   box-shadow: none;
@@ -19,7 +19,7 @@
 }
 
 .cases-list-panel {
-  height: var(--cases-panel-height, 70vh);
+  height: 100vh;
   border: none;
   background: #ffffff;
   box-shadow: none;
@@ -146,6 +146,6 @@
   .cases-map-shell,
   .cases-map-canvas,
   .cases-list-panel {
-    height: var(--cases-panel-height, 70vh);
+    height: 50vh;
   }
 }
