@@ -9,7 +9,7 @@ async function getData() {
 export default async function Page() {
   const data = await getData();
   return (
-    <main className="py-2 py-md-3">
+    <main>
       <Map cases={data.data} />
     </main>
   );
