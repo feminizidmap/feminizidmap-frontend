@@ -75,7 +75,6 @@ function sortCasesByDateDesc(caseList) {
 export default function CasesMap({
   cases = [],
   language = "de",
-  height = "70vh",
   pmtilesUrl = "/germany9.pmtiles",
 }) {
   const mapContainer = useRef(null);
@@ -184,7 +183,7 @@ export default function CasesMap({
         source: "cases",
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": ["step", ["get", "point_count"], "#CE5BFF", 10, "#B628F3", 20, "#B216F5", 50, "#A200E8"],
+          "circle-color": ["step", ["get", "point_count"], "#A541B0", 10, "#A541B0", 20, "#A541B0", 50, "#A541B0"],
           "circle-radius": ["step", ["get", "point_count"], 14, 10, 20, 20, 26, 50, 32],
           "circle-opacity": 1
         },
@@ -213,7 +212,7 @@ export default function CasesMap({
         source: "cases",
         filter: ["!", ["has", "point_count"]],
         paint: {
-          "circle-color": "#4a9ef5",
+          "circle-color": "#A541B0",
           "circle-radius": 6,
           "circle-stroke-width": 1,
           "circle-stroke-color": "#2a6fc9",
@@ -312,7 +311,7 @@ export default function CasesMap({
   }, [geojsonData, mapLoaded]);
 
   return (
-    <div className="cases-map-layout" style={{ "--cases-panel-height": height }}>
+    <div className="cases-map-layout">
       <div className="cases-map-shell">
         <div ref={mapContainer} className="cases-map-canvas" />
       </div>
