@@ -215,7 +215,7 @@ export default function CasesMap({
           "circle-color": "#A541B0",
           "circle-radius": 6,
           "circle-stroke-width": 1,
-          "circle-stroke-color": "#2a6fc9",
+          "circle-stroke-color": "transparent",
         },
       });
 
@@ -241,7 +241,7 @@ export default function CasesMap({
 
           setSelectedCases(selected);
           setPanelTitle(
-            languageRef.current === "de" ? `${selected.length} Faelle angeklickt` : `${selected.length} cases clicked`
+            languageRef.current === "de" ? `${selected.length} Fälle angeklickt` : `${selected.length} cases clicked`
           );
         } catch (error) {
           console.error("Error getting cluster leaves:", error);
@@ -319,7 +319,7 @@ export default function CasesMap({
       <aside className="cases-list-panel">
         <div className="cases-list-header">
           <div>
-            <p className="cases-list-kicker">{language === "de" ? "Auswahl" : "Selection"}</p>
+            <p className="cases-list-kicker">{language === "de" ? "Fälle 2023" : "2023 cases"}</p>
             <h2 className="cases-list-title">
               {selectedCases.length > 0 ? panelTitle : language === "de" ? "Noch keine Auswahl" : "No selection yet"}
             </h2>
