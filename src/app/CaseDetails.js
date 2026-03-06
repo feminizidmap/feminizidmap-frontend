@@ -7,7 +7,6 @@ export default function CaseDetails({ props }) {
     const subtitleParts = [props?.crime_date, city].filter(Boolean);
 
     const victimName = (victim?.firstname || victim?.lastname) ? `${victim?.firstname} ${victim?.lastname?.slice(0,1)}.` : "Unbekannt";
-    const perpName = (perpetrator?.firstname || perpetrator?.lastname) ? `${perpetrator?.lastname} ${perpetrator?.firstname}` : "Unbekannt";
     const perpRelation = victim.relationship_perpetrator_details ? `${victim.relationship_perpetrator_details} des Opfers` : "Fremder"
 
   return (
@@ -24,7 +23,7 @@ export default function CaseDetails({ props }) {
       <p className="case-details-row">
       Typ: <b>{crime?.type_of_feminicide?.label || "-"}</b>
       </p>
-      Täter: {perpName} ({perpetrator.age}) · {perpRelation}
+      Täter: {perpRelation} ({perpetrator.age}) 
       </p>
           <p className="case-details-row">
             Todesursache: <b>{crime?.cause_of_death?.label || "-"}</b>
