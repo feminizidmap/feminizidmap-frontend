@@ -1,10 +1,7 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://feminizidmap-backend.onrender.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.feminizidmap.org";
 const API_TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
 
 function unwrapEntity(entity) {
-
-  console.log(entity)
-  
   if (!entity) {
     return entity;
   }
@@ -19,8 +16,7 @@ function unwrapEntity(entity) {
   return entity;
 }
 
-function unwrapRelation(relation) {
-  if (relation === null) {
+function unwrapRelation(relation) {  if (relation === null) {
     return null;
   }
 
