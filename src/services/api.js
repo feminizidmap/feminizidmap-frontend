@@ -1,4 +1,5 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.feminizidmap.org";
+//const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.feminizidmap.org";
+const API_URL = "https://api.feminizidmap.org";
 const API_TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
 
 function unwrapEntity(entity) {
