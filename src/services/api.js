@@ -1,7 +1,9 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.feminizidmap.org";
+//const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.feminizidmap.org";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:1337";
 const API_TOKEN = process.env.NEXT_PUBLIC_API_TOKEN;
 
 function unwrapEntity(entity) {
+  
   if (!entity) {
     return entity;
   }
@@ -52,11 +54,11 @@ function normalizeCase(rawCase) {
 
   return {
     ...currentCase,
-    address: unwrapRelation(currentCase.address) ?? null,
+    //address: unwrapRelation(currentCase.address) ?? null,
     crime: unwrapRelation(currentCase.crime) ?? null,
     source: unwrapRelation(currentCase.source) ?? [],
-    perpetrator: unwrapRelation(currentCase.perpetrator) ?? [],
-    victim: unwrapRelation(currentCase.victim) ?? [],
+    perpetrators: unwrapRelation(currentCase.perpetrators) ?? [],
+    victims: unwrapRelation(currentCase.victims) ?? [],
     authorities_involved: unwrapRelation(currentCase.authorities_involved) ?? [],
     media_labels: unwrapRelation(currentCase.media_labels) ?? [],
     media_labels_used: unwrapRelation(currentCase.media_labels_used) ?? [],
@@ -101,7 +103,7 @@ async function fetchWithAuth(endpoint, options = {}) {
 }
 
 export async function getCasesPublic() {
-  return fetchWithAuth("/api/cases-public");
+  return fetchWithAuth("/api/cases-public?pLevel");
 }
 
 export async function getCases(options = {}) {

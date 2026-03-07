@@ -29,7 +29,7 @@ function normalizeCoordinate(value, isLatitude) {
 
 function getCoordinates(caseItem) {
   const crime = Array.isArray(caseItem?.crime) ? caseItem.crime[0] : caseItem?.crime;
-  const crimeGeolocationCoords = crime?.crime_geolocation?.coordinates;
+  const crimeGeolocationCoords = crime?.crime_coordinates;
   if (crimeGeolocationCoords && typeof crimeGeolocationCoords === "object") {
     const lng = normalizeCoordinate(crimeGeolocationCoords.lng ?? crimeGeolocationCoords.lon, false);
     const lat = normalizeCoordinate(crimeGeolocationCoords.lat, true);
@@ -341,7 +341,7 @@ export default function CasesMap({
         {selectedCases.length > 0 ? (
           <div className="cases-list-scroll">
             {selectedCases.map((caseItem) => (
-              <CaseDetails key={caseItem.id} props={caseItem} />
+              <CaseDetails key={caseItem.uuid} props={caseItem} />
             ))}
           </div>
         ) : (
