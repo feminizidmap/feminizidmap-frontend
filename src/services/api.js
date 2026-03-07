@@ -104,7 +104,7 @@ async function fetchWithAuth(endpoint, options = {}) {
 }
 
 export async function getCasesPublic() {
-  return fetchWithAuth("/cases-public");
+  return fetchWithAuth("/cases");
 }
 
 export async function getCases(options = {}) {
