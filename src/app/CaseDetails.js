@@ -14,7 +14,7 @@ export default function CaseDetails({ props }) {
     <article className="case-card">
       <p className="case-card-meta">{subtitleParts.join(" · ")}</p>
       <p className="case-card-description">
-      Opfer: {victim?.name} ({victim?.age || "Unbekannt"})
+      Opfer: {victim?.name || "Unbekannt"} ({victim?.age || "Unbekannt"})
       </p>
 
       <details className="case-details">
@@ -24,7 +24,7 @@ export default function CaseDetails({ props }) {
       Art des Femi(ni)zids: <b>{feminicideType}</b>
       </p>
       <p className="case-details-row">
-      Täter: {perpRelation} ({perpetrator?.age}) 
+      Täter: {perpRelation} ({perpetrator?.age || "Unbekannt"}) 
       </p>
         </div>
       </details>
