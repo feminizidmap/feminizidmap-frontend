@@ -102,10 +102,10 @@ async function fetchWithAuth(endpoint, options = {}) {
 }
 
 export async function getCasesPublic() {
-  return fetchWithAuth("/api/cases-public?pLevel");
+  return fetchWithAuth("/cases-public?pLevel");
 }
 
 export async function getCases(options = {}) {
   const { populate = "*", pageSize = 100000 } = options;
-  return fetchWithAuth(`/api/cases?populate=${populate}&pagination[pageSize]=${pageSize}`);
+  return fetchWithAuth(`/cases?populate=${populate}&pagination[pageSize]=${pageSize}`);
 }
