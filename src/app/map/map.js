@@ -95,7 +95,7 @@ export default function CasesMap({
   const casesById = useMemo(() => {
     const index = new Map();
     for (const { caseItem } of casesWithCoordinates) {
-      index.set(String(caseItem.id), caseItem);
+      index.set(String(caseItem.uuid), caseItem);
     }
     return index;
   }, [casesWithCoordinates]);
@@ -110,7 +110,7 @@ export default function CasesMap({
           coordinates,
         },
         properties: {
-          id: String(caseItem.id),
+          id: String(caseItem.uuid),
           crime_date: caseItem.crime_date || "",
           city: caseItem?.address?.city || "",
         },
