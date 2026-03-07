@@ -76,10 +76,12 @@ async function fetchWithAuth(endpoint, options = {}) {
     headers.Authorization = `Bearer ${API_TOKEN}`;
   }
 
-  const hasPopulate = /[?&]populate=/.test(endpoint);
-  const separator = endpoint.includes("?") ? "&" : "?";
-  const url = `${API_URL}${endpoint}${hasPopulate ? "" : `${separator}populate=*`}`;
+  // const hasPopulate = /[?&]populate=/.test(endpoint);
+  // const separator = endpoint.includes("?") ? "&" : "?";
+  // const url = `${API_URL}${endpoint}${hasPopulate ? "" : `${separator}populate=*`}`;
 
+  const url = `${API_URL}${endpoint}`;
+  
   const response = await fetch(url, {
     ...options,
     headers,
@@ -102,7 +104,7 @@ async function fetchWithAuth(endpoint, options = {}) {
 }
 
 export async function getCasesPublic() {
-  return fetchWithAuth("/cases-public?pLevel");
+  return fetchWithAuth("/cases-public");
 }
 
 export async function getCases(options = {}) {
