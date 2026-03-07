@@ -6,9 +6,9 @@ export default function CaseDetails({ props }) {
     const city = props?.crime.crime_city || "Unbekannt";
     const subtitleParts = [props?.crime_date, city].filter(Boolean);
 
-    const perpRelation = victim?.relationship_perpetrator.startsWith("Sonstig") ? `${victim?.relationship_perpetrator_details} des Opfers` : `${victim?.relationship_perpetrator} des Opfers`;
+    const perpRelation = victim?.relationship_perpetrator?.startsWith("Sonstig") ? `${victim?.relationship_perpetrator_details} des Opfers` : `${victim?.relationship_perpetrator} des Opfers`;
 
-    const feminicideType = victim?.type_of_feminicide.startsWith("Sonstig") ? victim?.type_of_feminicide_details : victim?.type_of_feminicide;
+    const feminicideType = victim?.type_of_feminicide?.startsWith("Sonstig") ? victim?.type_of_feminicide_details : victim?.type_of_feminicide;
   
   return (
     <article className="case-card">
