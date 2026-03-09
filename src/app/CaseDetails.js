@@ -5,11 +5,9 @@ export default function CaseDetails({ props }) {
     const sources = Array.isArray(props.source) ? props.source : [];
     const city = props?.crime.crime_city || "Unbekannt";
     const subtitleParts = [props?.crime_date, city].filter(Boolean);
-
-    const perpRelation = victim?.relationship_perpetrator?.startsWith("Sonstig") ? `${victim?.relationship_perpetrator_details} des Opfers` : `${victim?.relationship_perpetrator} des Opfers`;
-
+    const perpRelation = victim?.relationship_perpetrator?.startsWith("Sonstig") ? victim?.relationship_perpetrator_details : `${victim?.relationship_perpetrator} des Opfers`;
     const feminicideType = victim?.type_of_feminicide?.startsWith("Sonstig") ? victim?.type_of_feminicide_details : victim?.type_of_feminicide;
-  
+
   return (
     <article className="case-card">
       <p className="case-card-meta">{subtitleParts.join(" · ")}</p>
@@ -24,7 +22,7 @@ export default function CaseDetails({ props }) {
       Art des Femi(ni)zids: <b>{feminicideType}</b>
       </p>
       <p className="case-details-row">
-      Täter: {perpRelation} ({perpetrator?.age || "Unbekannt"}) 
+      Täter: {perpRelation} ({perpetrator?.age || "Unbekannt"})
       </p>
         </div>
       </details>
