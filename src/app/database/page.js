@@ -3,7 +3,7 @@ import CasesList from "./CasesList";
 import { getCases } from "../../services/api";
 
 async function getData() {
-  return getCases({ populate: "*", pageSize: 20000 });
+  return getCases();
 }
 
 export default async function Page() {

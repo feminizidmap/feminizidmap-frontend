@@ -3,7 +3,7 @@ export default function CaseDetails({ props }) {
     const victim = Array.isArray(props.victims) ? props.victims[0] : props.victims;
     const perpetrator = Array.isArray(props.perpetrators) ? props.perpetrators[0] : props.perpetrators;
     const sources = Array.isArray(props.source) ? props.source : [];
-    const city = props?.crime.crime_city || "Unbekannt";
+    const city = props?.crime?.crime_city || "Unbekannt";
     const subtitleParts = [props?.crime_date, city].filter(Boolean);
     const perpRelation = victim?.relationship_perpetrator?.startsWith("Sonstig") ? victim?.relationship_perpetrator_details : `${victim?.relationship_perpetrator} des Opfers`;
     const feminicideType = victim?.type_of_feminicide?.startsWith("Sonstig") ? victim?.type_of_feminicide_details : victim?.type_of_feminicide;

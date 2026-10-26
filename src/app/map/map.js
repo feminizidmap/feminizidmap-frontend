@@ -6,6 +6,7 @@ import { Protocol } from "pmtiles";
 import { layers, namedFlavor } from "@protomaps/basemaps";
 import "maplibre-gl/dist/maplibre-gl.css";
 import CaseDetails from "../CaseDetails";
+import { getCases } from "../../services/api";
 
 let protocolRegistered = false;
 
@@ -28,37 +29,14 @@ function normalizeCoordinate(value, isLatitude) {
 }
 
 function getCoordinates(caseItem) {
-  const crime = Array.isArray(caseItem?.crime) ? caseItem.crime[0] : caseItem?.crime;
-  const crimeGeolocationCoords = crime?.crime_coordinates;
-  if (crimeGeolocationCoords && typeof crimeGeolocationCoords === "object") {
-    const lng = normalizeCoordinate(crimeGeolocationCoords.lng ?? crimeGeolocationCoords.lon, false);
-    const lat = normalizeCoordinate(crimeGeolocationCoords.lat, true);
-    if (lng !== null && lat !== null) {
-      return [lng, lat];
-    }
+  const coords = caseItem?.crime?.crime_coordinates;
+  if (!coords) {
+    return null;
   }
 
-  const nestedCoords = caseItem?.address?.coordinates?.coordinates;
-  if (Array.isArray(nestedCoords) && nestedCoords.length >= 2) {
-    const lng = normalizeCoordinate(nestedCoords[0], false);
-    const lat = normalizeCoordinate(nestedCoords[1], true);
-    return lng !== null && lat !== null ? [lng, lat] : null;
-  }
-
-  if (nestedCoords && typeof nestedCoords === "object") {
-    const lng = normalizeCoordinate(nestedCoords.lng ?? nestedCoords.lon, false);
-    const lat = normalizeCoordinate(nestedCoords.lat, true);
-    return lng !== null && lat !== null ? [lng, lat] : null;
-  }
-
-  const flatCoords = caseItem?.address?.coordinates;
-  if (flatCoords && typeof flatCoords === "object") {
-    const lng = normalizeCoordinate(flatCoords.lng ?? flatCoords.lon, false);
-    const lat = normalizeCoordinate(flatCoords.lat, true);
-    return lng !== null && lat !== null ? [lng, lat] : null;
-  }
-
-  return null;
+  const lng = normalizeCoordinate(coords.lng, false);
+  const lat = normalizeCoordinate(coords.lat, true);
+  return lng !== null && lat !== null ? [lng, lat] : null;
 }
 
 function sortCasesByDateDesc(caseList) {
@@ -73,10 +51,11 @@ function sortCasesByDateDesc(caseList) {
 }
 
 export default function CasesMap({
-  cases = [],
   language = "de",
   pmtilesUrl = "/germany9.pmtiles",
 }) {
+  const [cases, setCases] = useState([]);
+  const [status, setStatus] = useState("loading");
   const mapContainer = useRef(null);
   const map = useRef(null);
   const geojsonRef = useRef({ type: "FeatureCollection", features: [] });
@@ -85,6 +64,26 @@ export default function CasesMap({
   const [selectedCases, setSelectedCases] = useState([]);
   const [panelTitle, setPanelTitle] = useState("");
   const [mapLoaded, setMapLoaded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getCases()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setCases(data ?? []);
+        setStatus("ready");
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.error("Error loading cases:", error);
+        setStatus("error");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const casesWithCoordinates = useMemo(() => {
     return cases
@@ -112,7 +111,7 @@ export default function CasesMap({
         properties: {
           id: String(caseItem.uuid),
           crime_date: caseItem.crime_date || "",
-          city: caseItem?.address?.city || "",
+          city: caseItem?.crime?.crime_city || "",
         },
       })),
     }),
@@ -346,9 +345,17 @@ export default function CasesMap({
           </div>
         ) : (
           <p className="cases-list-empty">
-            {language === "de"
-              ? "Klicke auf einen Marker oder Cluster, um Fallinformationen anzuzeigen."
-              : "Click a marker or cluster to show case details."}
+            {status === "loading"
+              ? language === "de"
+                ? "Fälle werden geladen…"
+                : "Loading cases…"
+              : status === "error"
+                ? language === "de"
+                  ? "Fälle konnten nicht geladen werden."
+                  : "Could not load cases."
+                : language === "de"
+                  ? "Klicke auf einen Marker oder Cluster, um Fallinformationen anzuzeigen."
+                  : "Click a marker or cluster to show case details."}
           </p>
         )}
       </aside>
