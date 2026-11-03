@@ -1,31 +1,82 @@
+import "./case-details.css";
+import {
+  clean,
+  cleanList,
+  first,
+  formatDate,
+  judicialStatus,
+  knownAge,
+  perpetratorLabel,
+  stateName,
+  withDetails,
+} from "./caseFormat";
+
 export default function CaseDetails({ props }) {
-    const crime = Array.isArray(props.crime) ? props.crime[0] : props.crime;
-    const victim = Array.isArray(props.victims) ? props.victims[0] : props.victims;
-    const perpetrator = Array.isArray(props.perpetrators) ? props.perpetrators[0] : props.perpetrators;
-    const sources = Array.isArray(props.source) ? props.source : [];
-    const city = props?.crime?.crime_city || "Unbekannt";
-    const subtitleParts = [props?.crime_date, city].filter(Boolean);
-    const perpRelation = victim?.relationship_perpetrator?.startsWith("Sonstig") ? victim?.relationship_perpetrator_details : `${victim?.relationship_perpetrator} des Opfers`;
-    const feminicideType = victim?.type_of_feminicide?.startsWith("Sonstig") ? victim?.type_of_feminicide_details : victim?.type_of_feminicide;
+  const crime = first(props.crime) ?? {};
+  const victim = first(props.victims) ?? {};
+  const perpetrator = first(props.perpetrators) ?? {};
+
+  const place = [clean(crime.crime_city), stateName(props)].filter(Boolean).join(" · ");
+  const victimAge = knownAge(victim.age);
+  const perpetratorAge = knownAge(perpetrator.age);
+  const relationship = withDetails(victim.relationship_perpetrator, victim.relationship_perpetrator_details);
+  const causeOfDeath = clean(crime.cause_of_death);
+  const status = judicialStatus(perpetrator.judical_status);
+  const sentence = clean(perpetrator.sentence);
+
+  const tags = [
+    withDetails(victim.type_of_feminicide, victim.type_of_feminicide_details),
+    clean(crime.location_of_body),
+    cleanList(crime.motives)[0],
+  ];
 
   return (
     <article className="case-card">
-      <p className="case-card-meta">{subtitleParts.join(" · ")}</p>
-      <p className="case-card-description">
-      Opfer: {victim?.name || "Unbekannt"} ({victim?.age || "Unbekannt"})
-      </p>
+      <div className="case-card-meta">
+        {formatDate(props.crime_date) && <b>{formatDate(props.crime_date)}</b>}
+        {place && <span>{place}</span>}
+        {props.attempt === true && <span className="case-card-flag">Versuch, überlebt</span>}
+      </div>
 
-      <details className="case-details">
-        <summary>Mehr Details</summary>
-      <div className="case-details-content">
-      <p className="case-details-row">
-      Art des Femi(ni)zids: <b>{feminicideType}</b>
-      </p>
-      <p className="case-details-row">
-      Täter: {perpRelation} ({perpetrator?.age || "Unbekannt"})
-      </p>
+      <h3 className="case-card-name">
+        {clean(victim.name) ?? "Name unbekannt"}
+        <span>, {victimAge ? `${victimAge} Jahre` : "Alter unbekannt"}</span>
+      </h3>
+
+      {(relationship || perpetratorAge || causeOfDeath) && (
+        <p className="case-card-summary">
+          {(relationship || perpetratorAge) && (
+            <>
+              {perpetratorLabel(perpetrator)}: {relationship && <b>{relationship}</b>}
+              {relationship && perpetratorAge && ", "}
+              {perpetratorAge && `${perpetratorAge} J.`}
+            </>
+          )}
+          {(relationship || perpetratorAge) && causeOfDeath && " · "}
+          {causeOfDeath}
+        </p>
+      )}
+
+      {tags.some(Boolean) && (
+        <div className="case-card-tags">
+          {tags.map(
+            (tag, index) =>
+              tag && (
+                <span key={index} className={`case-card-tag${index === 0 ? " is-type" : ""}`}>
+                  {tag}
+                </span>
+              )
+          )}
         </div>
-      </details>
+      )}
+
+      <p className="case-card-status">
+        <i style={{ background: status.color }} />
+        <span>
+          <b>{status.label}</b>
+          {sentence && sentence !== "Entfällt" && ` · ${sentence}`}
+        </span>
+      </p>
     </article>
   );
-};
+}

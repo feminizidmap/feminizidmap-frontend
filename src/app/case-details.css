@@ -1,0 +1,99 @@
+.case-card {
+  margin-bottom: 0.75rem;
+  padding: 0.9rem 0.85rem 0.85rem;
+  border: none;
+  border-top: 1px solid #eceff4;
+  background: #fff;
+}
+
+.case-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.5rem;
+  margin-bottom: 0.3rem;
+  font-size: 0.8rem;
+  color: #6c7788;
+}
+
+.case-card-meta b {
+  color: #172033;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.case-card-flag {
+  padding: 0.12rem 0.4rem;
+  background: #fff1d9;
+  color: #865300;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.case-card-name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  color: #172033;
+}
+
+.case-card-name span {
+  font-weight: 500;
+  color: #5b6677;
+}
+
+.case-card-summary {
+  margin: 0.2rem 0 0.55rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #273349;
+}
+
+.case-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 0.6rem;
+}
+
+.case-card-tag {
+  padding: 0.12rem 0.45rem;
+  border: 1px solid #d9dee8;
+  background: #fff;
+  color: #384b70;
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.case-card-tag.is-type {
+  border-color: #a541b0;
+  color: #a541b0;
+}
+
+.case-card-status {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.4;
+  color: #384b70;
+}
+
+.case-card-status i {
+  flex: none;
+  align-self: center;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.case-card-status b {
+  color: #172033;
+  font-weight: 600;
+}

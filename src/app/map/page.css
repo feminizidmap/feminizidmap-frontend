@@ -134,58 +134,6 @@
   text-decoration: none;
 }
 
-.case-card {
-  margin-bottom: 0.75rem;
-  padding: 0.85rem;
-  border: none;
-  border-top: 1px solid #eceff4;
-  background: #fff;
-}
-
-.case-card-meta {
-  margin: 0 0 0.45rem;
-  font-size: 0.82rem;
-  letter-spacing: 0.02em;
-  color: #6c7788;
-}
-
-.case-card-description {
-  margin: 0;
-  color: #1f2c43;
-  font-size: 0.95rem;
-  line-height: 1.45;
-}
-
-.case-details {
-  margin-top: 0.65rem;
-}
-
-.case-details summary {
-  cursor: pointer;
-  color: #243455;
-  font-weight: 600;
-}
-
-.case-details-content {
-  margin-top: 0.75rem;
-}
-
-.case-details-row {
-  margin-bottom: 0.45rem;
-  color: #273349;
-  font-size: 0.9rem;
-}
-
-.case-sources {
-  margin: 0;
-  padding-left: 1rem;
-}
-
-.case-sources a {
-  color: #2f4f8f;
-  word-break: break-word;
-}
-
 /* Monthly histogram range slider */
 .month-slider {
   position: relative;
