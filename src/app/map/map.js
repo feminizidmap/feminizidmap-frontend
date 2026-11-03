@@ -11,6 +11,8 @@ import { getMonth, getMonthBounds, getStateCode, isFullRange, rangeLabel, states
 
 let protocolRegistered = false;
 
+const NO_SELECTION_FILTER = ["==", ["get", "id"], "__none__"];
+
 function normalizeCoordinate(value, isLatitude) {
   if (value === null || value === undefined || value === "") {
     return null;
@@ -62,7 +64,7 @@ export default function CasesMap({
   const geojsonRef = useRef({ type: "FeatureCollection", features: [] });
   const casesByIdRef = useRef(new Map());
   const languageRef = useRef(language);
-  // cases of the clicked cluster/point; null = no selection
+  // { cases, filter } of the clicked cluster/point (filter drives the map highlight); null = no selection
   const [selection, setSelection] = useState(null);
   const [listLimit, setListLimit] = useState(LIST_PAGE_SIZE);
   const [mapLoaded, setMapLoaded] = useState(false);
@@ -223,7 +225,7 @@ export default function CasesMap({
       },
     });
 
-    map.current.addControl(new maplibregl.NavigationControl(), "top-right");
+    map.current.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     map.current.doubleClickZoom.disable();
 
     map.current.on("load", () => {
@@ -235,6 +237,20 @@ export default function CasesMap({
         cluster: true,
         clusterMaxZoom: 14,
         clusterRadius: 50,
+      });
+
+      // White gap + ink ring around the selected cluster/point, drawn below it.
+      map.current.addLayer({
+        id: "selection-ring",
+        type: "circle",
+        source: "cases",
+        filter: NO_SELECTION_FILTER,
+        paint: {
+          "circle-color": "#ffffff",
+          "circle-radius": ["case", ["has", "point_count"], ["step", ["get", "point_count"], 17, 10, 23, 20, 29, 50, 35], 9],
+          "circle-stroke-width": 2,
+          "circle-stroke-color": "#172033",
+        },
       });
 
       map.current.addLayer({
@@ -299,7 +315,10 @@ export default function CasesMap({
             leaves.map((leaf) => casesByIdRef.current.get(String(leaf?.properties?.id))).filter(Boolean)
           );
 
-          setSelection(selected);
+          setSelection({
+            cases: selected,
+            filter: ["all", ["has", "point_count"], ["==", ["get", "cluster_id"], clusterId]],
+          });
           setListLimit(LIST_PAGE_SIZE);
         } catch (error) {
           console.error("Error getting cluster leaves:", error);
@@ -317,7 +336,10 @@ export default function CasesMap({
           return;
         }
 
-        setSelection([selected]);
+        setSelection({
+          cases: [selected],
+          filter: ["all", ["!", ["has", "point_count"]], ["==", ["get", "id"], String(selectedId)]],
+        });
         setListLimit(LIST_PAGE_SIZE);
       });
 
@@ -365,6 +387,13 @@ export default function CasesMap({
     source.setData(geojsonData);
   }, [geojsonData, mapLoaded]);
 
+  useEffect(() => {
+    if (!map.current || !mapLoaded || !map.current.getLayer("selection-ring")) {
+      return;
+    }
+    map.current.setFilter("selection-ring", selection?.filter ?? NO_SELECTION_FILTER);
+  }, [selection, mapLoaded]);
+
   // Changing any filter clears the cluster selection and resets the list pagination.
   useEffect(() => {
     setSelection(null);
@@ -386,7 +415,7 @@ export default function CasesMap({
         <CaseList
           status={status}
           filteredCases={filteredCases}
-          selection={selection}
+          selection={selection?.cases ?? null}
           activeCount={activeCount}
           summary={`${rangeLabel(from, to, bounds)} · ${statesLabel(states)}`}
           limit={listLimit}
