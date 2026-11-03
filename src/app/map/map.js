@@ -1,15 +1,34 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import maplibregl from "maplibre-gl";
 import { Protocol } from "pmtiles";
 import { layers, namedFlavor } from "@protomaps/basemaps";
 import "maplibre-gl/dist/maplibre-gl.css";
 import CaseList, { LIST_PAGE_SIZE } from "./CaseList";
+import FilterPanel from "./FilterPanel";
+import { FunnelIcon } from "./FilterControls";
 import { getAllCases } from "../../services/api";
 import { getMonth, getMonthBounds, getStateCode, isFullRange, rangeLabel, statesLabel } from "./filterUtils";
 
 let protocolRegistered = false;
+
+// Empty MapLibre control; React renders its content through a portal.
+class PortalControl {
+  constructor(className) {
+    this.container = document.createElement("div");
+    this.container.className = `maplibregl-ctrl ${className}`;
+  }
+
+  onAdd() {
+    return this.container;
+  }
+
+  onRemove() {
+    this.container.remove();
+  }
+}
 
 const NO_SELECTION_FILTER = ["==", ["get", "id"], "__none__"];
 
@@ -67,6 +86,8 @@ export default function CasesMap({
   // { cases, filter } of the clicked cluster/point (filter drives the map highlight); null = no selection
   const [selection, setSelection] = useState(null);
   const [listLimit, setListLimit] = useState(LIST_PAGE_SIZE);
+  const [filterOpen, setFilterOpen] = useState(true);
+  const [filterControlEl, setFilterControlEl] = useState(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   // null = full data range; otherwise [fromMonth, toMonth] (absolute month indices, inclusive)
   const [range, setRange] = useState(null);
@@ -226,6 +247,9 @@ export default function CasesMap({
     });
 
     map.current.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    const filterControl = new PortalControl("cases-filter-control");
+    map.current.addControl(filterControl, "top-right");
+    setFilterControlEl(filterControl.container);
     map.current.doubleClickZoom.disable();
 
     map.current.on("load", () => {
@@ -371,6 +395,7 @@ export default function CasesMap({
         map.current = null;
       }
       setMapLoaded(false);
+      setFilterControlEl(null);
     };
   }, [pmtilesUrl]);
 
@@ -405,10 +430,54 @@ export default function CasesMap({
     setStates([]);
   }, []);
 
+  const changeRange = useCallback(
+    (nextFrom, nextTo) => {
+      setRange(isFullRange(nextFrom, nextTo, bounds) ? null : [nextFrom, nextTo]);
+    },
+    [bounds]
+  );
+
+  const toggleState = useCallback((code) => {
+    setStates((current) =>
+      current.includes(code) ? current.filter((item) => item !== code) : [...current, code].sort()
+    );
+  }, []);
+
+  const filters = {
+    bounds,
+    from,
+    to,
+    monthCounts,
+    stateCounts,
+    states,
+    activeCount,
+    filteredCount: filteredCases.length,
+    total: entries.length,
+    onRangeChange: changeRange,
+    onToggleState: toggleState,
+    onReset: resetFilters,
+  };
+
   return (
     <div className="cases-map-layout">
       <div className="cases-map-shell">
         <div ref={mapContainer} className="cases-map-canvas" />
+        {filterControlEl &&
+          createPortal(
+            <button
+              type="button"
+              className={`filter-toggle${filterOpen ? " is-active" : ""}`}
+              title="Filter"
+              aria-label="Filter"
+              aria-expanded={filterOpen}
+              onClick={() => setFilterOpen((open) => !open)}
+            >
+              <FunnelIcon />
+              {activeCount > 0 && <span className="filter-badge">{activeCount}</span>}
+            </button>,
+            filterControlEl
+          )}
+        {filterOpen && bounds && <FilterPanel filters={filters} onClose={() => setFilterOpen(false)} />}
       </div>
 
       <aside className="cases-list-panel">
