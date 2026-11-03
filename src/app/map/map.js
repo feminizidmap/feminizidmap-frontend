@@ -103,7 +103,7 @@ export default function CasesMap({
   const [listLimit, setListLimit] = useState(LIST_PAGE_SIZE);
   // uuids of cases whose details are open; survives filter changes and is highlighted on the map
   const [openCaseIds, setOpenCaseIds] = useState(() => new Set());
-  const [filterOpen, setFilterOpen] = useState(true);
+  const [filterOpen, setFilterOpen] = useState(false);
   const [filterControlEl, setFilterControlEl] = useState(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
