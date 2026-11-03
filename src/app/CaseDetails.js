@@ -108,6 +108,19 @@ export default function CaseDetails({ props }) {
         <span>, {victimAge ? `${victimAge} Jahre` : "Alter unbekannt"}</span>
       </h3>
 
+      {tags.some(Boolean) && (
+        <div className="case-card-tags">
+          {tags.map(
+            (tag, index) =>
+              tag && (
+                <span key={index} className={`case-card-tag${index === 0 ? " is-type" : ""}`}>
+                  {tag}
+                </span>
+              )
+          )}
+        </div>
+      )}
+
       {(relationship || perpetratorAge || causeOfDeath) && (
         <p className="case-card-summary">
           {(relationship || perpetratorAge) && (
@@ -120,19 +133,6 @@ export default function CaseDetails({ props }) {
           {(relationship || perpetratorAge) && causeOfDeath && " · "}
           {causeOfDeath}
         </p>
-      )}
-
-      {tags.some(Boolean) && (
-        <div className="case-card-tags">
-          {tags.map(
-            (tag, index) =>
-              tag && (
-                <span key={index} className={`case-card-tag${index === 0 ? " is-type" : ""}`}>
-                  {tag}
-                </span>
-              )
-          )}
-        </div>
       )}
 
       <p className="case-card-status">

@@ -86,7 +86,14 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding-right: 0.25rem;
+  /* room for card borders and shadows */
+  padding: 2px 0.35rem 2px 2px;
+}
+
+@media (min-width: 992px) {
+  .cases-list-panel {
+    background: #f3f5f8;
+  }
 }
 
 .cases-list-empty {
