@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import { Protocol } from "pmtiles";
 import { layers, namedFlavor } from "@protomaps/basemaps";
 import "maplibre-gl/dist/maplibre-gl.css";
 import CaseDetails from "../CaseDetails";
 import { getAllCases } from "../../services/api";
+import { getMonth, getMonthBounds, getStateCode, isFullRange } from "./filterUtils";
 
 let protocolRegistered = false;
 
@@ -64,6 +65,10 @@ export default function CasesMap({
   const [selectedCases, setSelectedCases] = useState([]);
   const [panelTitle, setPanelTitle] = useState("");
   const [mapLoaded, setMapLoaded] = useState(false);
+  // null = full data range; otherwise [fromMonth, toMonth] (absolute month indices, inclusive)
+  const [range, setRange] = useState(null);
+  // selected Bundesland codes; empty = all
+  const [states, setStates] = useState([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -85,24 +90,79 @@ export default function CasesMap({
     };
   }, []);
 
-  const casesWithCoordinates = useMemo(() => {
+  // Only cases with coordinates can be shown on the map, so they form the base for list and filters.
+  const entries = useMemo(() => {
     return cases
-      .map((caseItem) => ({ caseItem, coordinates: getCoordinates(caseItem) }))
+      .map((caseItem) => ({
+        caseItem,
+        coordinates: getCoordinates(caseItem),
+        month: getMonth(caseItem),
+        state: getStateCode(caseItem),
+      }))
       .filter(({ coordinates }) => Array.isArray(coordinates));
   }, [cases]);
 
+  const bounds = useMemo(() => getMonthBounds(entries.map(({ month }) => month)), [entries]);
+  const from = bounds ? Math.max(bounds.min, range?.[0] ?? bounds.min) : 0;
+  const to = bounds ? Math.min(bounds.max, range?.[1] ?? bounds.max) : 0;
+  const fullRange = isFullRange(from, to, bounds);
+
+  // Cases without a valid date are only shown while the date range is full.
+  const matchesDate = useCallback(
+    ({ month }) => fullRange || (month !== null && month >= from && month <= to),
+    [fullRange, from, to]
+  );
+  const matchesStates = useCallback(
+    ({ state }) => states.length === 0 || (state !== null && states.includes(state)),
+    [states]
+  );
+
+  const filteredEntries = useMemo(
+    () => entries.filter((entry) => matchesDate(entry) && matchesStates(entry)),
+    [entries, matchesDate, matchesStates]
+  );
+
+  const filteredCases = useMemo(
+    () => sortCasesByDateDesc(filteredEntries.map(({ caseItem }) => caseItem)),
+    [filteredEntries]
+  );
+
+  // Bundesland counts respect the date filter only, month counts the Bundesland filter only.
+  const stateCounts = useMemo(() => {
+    const counts = {};
+    for (const entry of entries) {
+      if (entry.state && matchesDate(entry)) {
+        counts[entry.state] = (counts[entry.state] ?? 0) + 1;
+      }
+    }
+    return counts;
+  }, [entries, matchesDate]);
+
+  const monthCounts = useMemo(() => {
+    if (!bounds) return [];
+    const counts = new Array(bounds.max - bounds.min + 1).fill(0);
+    for (const entry of entries) {
+      if (entry.month !== null && matchesStates(entry)) {
+        counts[entry.month - bounds.min] += 1;
+      }
+    }
+    return counts;
+  }, [entries, bounds, matchesStates]);
+
+  const activeCount = (fullRange ? 0 : 1) + (states.length > 0 ? 1 : 0);
+
   const casesById = useMemo(() => {
     const index = new Map();
-    for (const { caseItem } of casesWithCoordinates) {
+    for (const { caseItem } of filteredEntries) {
       index.set(String(caseItem.uuid), caseItem);
     }
     return index;
-  }, [casesWithCoordinates]);
+  }, [filteredEntries]);
 
   const geojsonData = useMemo(
     () => ({
       type: "FeatureCollection",
-      features: casesWithCoordinates.map(({ caseItem, coordinates }) => ({
+      features: filteredEntries.map(({ caseItem, coordinates }) => ({
         type: "Feature",
         geometry: {
           type: "Point",
@@ -115,7 +175,7 @@ export default function CasesMap({
         },
       })),
     }),
-    [casesWithCoordinates]
+    [filteredEntries]
   );
 
   useEffect(() => {
