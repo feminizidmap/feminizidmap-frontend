@@ -37,6 +37,11 @@ const DESKTOP_MAX_BOUNDS = [[2.0, 47.0], [18.0, 55.0]];
 // Looser on mobile so fitBounds can push Germany between top bar and list sheet.
 const MOBILE_MAX_BOUNDS = [[-4.0, 36.0], [24.0, 62.0]];
 
+// Points with an open case, and clusters containing at least one, are drawn in ink and on top.
+const HAS_OPEN_CASE = ["any", ["==", ["get", "hasOpen"], true], ["==", ["get", "open"], true]];
+const MARKER_COLOR = ["case", HAS_OPEN_CASE, "#172033", "#A541B0"];
+const MARKER_SORT_KEY = ["case", HAS_OPEN_CASE, 1, 0];
+
 const NO_SELECTION_FILTER = ["==", ["get", "id"], "__none__"];
 
 function normalizeCoordinate(value, isLatitude) {
@@ -209,10 +214,11 @@ export default function CasesMap({
           id: String(caseItem.uuid),
           crime_date: caseItem.crime_date || "",
           city: caseItem?.crime?.crime_city || "",
+          open: openCaseIds.has(String(caseItem.uuid)),
         },
       })),
     }),
-    [filteredEntries]
+    [filteredEntries, openCaseIds]
   );
 
   useEffect(() => {
@@ -269,6 +275,9 @@ export default function CasesMap({
         cluster: true,
         clusterMaxZoom: 14,
         clusterRadius: 50,
+        clusterProperties: {
+          hasOpen: ["any", ["==", ["get", "open"], true]],
+        },
       });
 
       // White gap + ink ring around the selected cluster/point, drawn below it.
@@ -290,8 +299,11 @@ export default function CasesMap({
         type: "circle",
         source: "cases",
         filter: ["has", "point_count"],
+        layout: {
+          "circle-sort-key": MARKER_SORT_KEY,
+        },
         paint: {
-          "circle-color": ["step", ["get", "point_count"], "#A541B0", 10, "#A541B0", 20, "#A541B0", 50, "#A541B0"],
+          "circle-color": MARKER_COLOR,
           "circle-radius": ["step", ["get", "point_count"], 14, 10, 20, 20, 26, 50, 32],
           "circle-opacity": 1
         },
@@ -319,8 +331,11 @@ export default function CasesMap({
         type: "circle",
         source: "cases",
         filter: ["!", ["has", "point_count"]],
+        layout: {
+          "circle-sort-key": MARKER_SORT_KEY,
+        },
         paint: {
-          "circle-color": "#A541B0",
+          "circle-color": MARKER_COLOR,
           "circle-radius": 6,
           "circle-stroke-width": 1,
           "circle-stroke-color": "transparent",
