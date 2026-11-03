@@ -185,6 +185,112 @@
   word-break: break-word;
 }
 
+/* Monthly histogram range slider */
+.month-slider {
+  position: relative;
+  user-select: none;
+  touch-action: none;
+}
+
+.month-slider-area {
+  position: relative;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.month-slider-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 1px;
+  height: 100%;
+}
+
+.month-slider-bars i {
+  flex: 1;
+  min-height: 2px;
+  background: #d9dee8;
+}
+
+.month-slider-bars i.is-in-range {
+  background: #a541b0;
+}
+
+.month-slider-brush {
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  background: rgba(165, 65, 176, 0.07);
+  border-left: 2px solid #172033;
+  border-right: 2px solid #172033;
+  pointer-events: none;
+}
+
+.month-slider-handle {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 22px;
+  margin-top: -11px;
+  background: #172033;
+}
+
+.month-slider-handle.is-from {
+  left: -5px;
+}
+
+.month-slider-handle.is-to {
+  right: -5px;
+}
+
+.month-slider-handle:focus-visible {
+  outline: 2px solid #a541b0;
+  outline-offset: 2px;
+}
+
+.month-slider-years {
+  display: grid;
+  margin-top: 6px;
+}
+
+.month-slider-years span {
+  font-size: 0.72rem;
+  line-height: 1.2;
+  color: #6c7788;
+  border-left: 1px solid #c5cedd;
+  padding-left: 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Year presets */
+.year-presets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  margin-top: 0.75rem;
+}
+
+.year-presets button {
+  min-width: 0;
+  height: 30px;
+  border: 1px solid #d9dee8;
+  background: #fff;
+  color: #1f2c43;
+  font-size: 0.76rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.year-presets button:hover {
+  border-color: #c5cedd;
+  background: #f6f8fb;
+}
+
+.year-presets button.is-active {
+  background: #172033;
+  border-color: #172033;
+  color: #fff;
+}
+
 .maplibregl-ctrl-group {
   overflow: hidden;
   border: 1px solid #d9dee8 !important;
