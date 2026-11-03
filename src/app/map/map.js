@@ -6,7 +6,7 @@ import { Protocol } from "pmtiles";
 import { layers, namedFlavor } from "@protomaps/basemaps";
 import "maplibre-gl/dist/maplibre-gl.css";
 import CaseDetails from "../CaseDetails";
-import { getCases } from "../../services/api";
+import { getAllCases } from "../../services/api";
 
 let protocolRegistered = false;
 
@@ -68,7 +68,7 @@ export default function CasesMap({
   useEffect(() => {
     let cancelled = false;
 
-    getCases()
+    getAllCases()
       .then(({ data }) => {
         if (cancelled) return;
         setCases(data ?? []);
