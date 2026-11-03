@@ -5,9 +5,9 @@ import maplibregl from "maplibre-gl";
 import { Protocol } from "pmtiles";
 import { layers, namedFlavor } from "@protomaps/basemaps";
 import "maplibre-gl/dist/maplibre-gl.css";
-import CaseDetails from "../CaseDetails";
+import CaseList, { LIST_PAGE_SIZE } from "./CaseList";
 import { getAllCases } from "../../services/api";
-import { getMonth, getMonthBounds, getStateCode, isFullRange } from "./filterUtils";
+import { getMonth, getMonthBounds, getStateCode, isFullRange, rangeLabel, statesLabel } from "./filterUtils";
 
 let protocolRegistered = false;
 
@@ -62,8 +62,9 @@ export default function CasesMap({
   const geojsonRef = useRef({ type: "FeatureCollection", features: [] });
   const casesByIdRef = useRef(new Map());
   const languageRef = useRef(language);
-  const [selectedCases, setSelectedCases] = useState([]);
-  const [panelTitle, setPanelTitle] = useState("");
+  // cases of the clicked cluster/point; null = no selection
+  const [selection, setSelection] = useState(null);
+  const [listLimit, setListLimit] = useState(LIST_PAGE_SIZE);
   const [mapLoaded, setMapLoaded] = useState(false);
   // null = full data range; otherwise [fromMonth, toMonth] (absolute month indices, inclusive)
   const [range, setRange] = useState(null);
@@ -298,10 +299,8 @@ export default function CasesMap({
             leaves.map((leaf) => casesByIdRef.current.get(String(leaf?.properties?.id))).filter(Boolean)
           );
 
-          setSelectedCases(selected);
-          setPanelTitle(
-            languageRef.current === "de" ? `${selected.length} Fälle angeklickt` : `${selected.length} cases clicked`
-          );
+          setSelection(selected);
+          setListLimit(LIST_PAGE_SIZE);
         } catch (error) {
           console.error("Error getting cluster leaves:", error);
         }
@@ -318,16 +317,15 @@ export default function CasesMap({
           return;
         }
 
-        setSelectedCases([selected]);
-        setPanelTitle(languageRef.current === "de" ? "1 Fall angeklickt" : "1 case clicked");
+        setSelection([selected]);
+        setListLimit(LIST_PAGE_SIZE);
       });
 
       map.current.on("click", (e) => {
         const clusters = map.current.queryRenderedFeatures(e.point, { layers: ["clusters"] });
         const points = map.current.queryRenderedFeatures(e.point, { layers: ["unclustered-point"] });
         if (clusters.length === 0 && points.length === 0) {
-          setSelectedCases([]);
-          setPanelTitle("");
+          setSelection(null);
         }
       });
 
@@ -365,9 +363,18 @@ export default function CasesMap({
     }
 
     source.setData(geojsonData);
-    setSelectedCases([]);
-    setPanelTitle("");
   }, [geojsonData, mapLoaded]);
+
+  // Changing any filter clears the cluster selection and resets the list pagination.
+  useEffect(() => {
+    setSelection(null);
+    setListLimit(LIST_PAGE_SIZE);
+  }, [filteredEntries]);
+
+  const resetFilters = useCallback(() => {
+    setRange(null);
+    setStates([]);
+  }, []);
 
   return (
     <div className="cases-map-layout">
@@ -376,48 +383,17 @@ export default function CasesMap({
       </div>
 
       <aside className="cases-list-panel">
-        <div className="cases-list-header">
-          <div>
-            <p className="cases-list-kicker">{language === "de" ? "Fälle 2023" : "2023 cases"}</p>
-            <h2 className="cases-list-title">
-              {selectedCases.length > 0 ? panelTitle : language === "de" ? "Noch keine Auswahl" : "No selection yet"}
-            </h2>
-          </div>
-          {selectedCases.length > 0 && (
-            <button
-              type="button"
-              className="cases-list-close"
-              onClick={() => {
-                setSelectedCases([]);
-                setPanelTitle("");
-              }}
-            >
-              {language === "de" ? "Schliessen" : "Close"}
-            </button>
-          )}
-        </div>
-
-        {selectedCases.length > 0 ? (
-          <div className="cases-list-scroll">
-            {selectedCases.map((caseItem) => (
-              <CaseDetails key={caseItem.uuid} props={caseItem} />
-            ))}
-          </div>
-        ) : (
-          <p className="cases-list-empty">
-            {status === "loading"
-              ? language === "de"
-                ? "Fälle werden geladen…"
-                : "Loading cases…"
-              : status === "error"
-                ? language === "de"
-                  ? "Fälle konnten nicht geladen werden."
-                  : "Could not load cases."
-                : language === "de"
-                  ? "Klicke auf einen Marker oder Cluster, um Fallinformationen anzuzeigen."
-                  : "Click a marker or cluster to show case details."}
-          </p>
-        )}
+        <CaseList
+          status={status}
+          filteredCases={filteredCases}
+          selection={selection}
+          activeCount={activeCount}
+          summary={`${rangeLabel(from, to, bounds)} · ${statesLabel(states)}`}
+          limit={listLimit}
+          onMore={() => setListLimit((limit) => limit + LIST_PAGE_SIZE)}
+          onClearSelection={() => setSelection(null)}
+          onReset={resetFilters}
+        />
       </aside>
     </div>
   );

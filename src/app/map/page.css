@@ -45,11 +45,25 @@
   color: #6c7788;
 }
 
+.cases-list-heading {
+  min-width: 0;
+}
+
 .cases-list-title {
   margin: 0.25rem 0 0;
   font-size: 1.05rem;
+  font-weight: 500;
   line-height: 1.25;
   color: #172033;
+}
+
+.cases-list-sub {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+  color: #5b6677;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cases-list-close {
@@ -78,6 +92,45 @@
   margin: 0.25rem 0 0;
   color: #5b6677;
   font-size: 0.95rem;
+}
+
+.cases-list-more {
+  margin: 0.25rem 0 1rem;
+  width: 100%;
+  border: 1px solid #d9dee8;
+  background: #fff;
+  color: #1f2c43;
+  padding: 0.55rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.cases-list-more:hover {
+  border-color: #c5cedd;
+  background: #f6f8fb;
+}
+
+.link-button {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: #384b70;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: #b0bdd0;
+  text-underline-offset: 2px;
+}
+
+.link-button:hover {
+  color: #172033;
+  text-decoration-color: #384b70;
+}
+
+.link-button:disabled {
+  color: #a3abb8;
+  cursor: default;
+  text-decoration: none;
 }
 
 .case-card {
