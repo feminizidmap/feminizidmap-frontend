@@ -85,3 +85,21 @@ export function StateChecklist({ states, stateCounts, onToggle }) {
     </>
   );
 }
+
+export function StateToggleGrid({ states, stateCounts, onToggle }) {
+  return (
+    <div className="state-toggle-grid">
+      {STATE_CODES.map((code) => {
+        const count = stateCounts[code] ?? 0;
+        const active = states.includes(code);
+        const classes = ["state-toggle", active && "is-active", count === 0 && "is-zero"].filter(Boolean).join(" ");
+        return (
+          <button key={code} type="button" className={classes} aria-pressed={active} onClick={() => onToggle(code)}>
+            <span>{STATES[code]}</span>
+            <em>{count}</em>
+          </button>
+        );
+      })}
+    </div>
+  );
+}

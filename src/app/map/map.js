@@ -9,6 +9,8 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import CaseList, { LIST_PAGE_SIZE } from "./CaseList";
 import FilterPanel from "./FilterPanel";
 import { FunnelIcon } from "./FilterControls";
+import { MobileFilterBar, MobileFilterSheet } from "./MobileFilters";
+import useMediaQuery from "./useMediaQuery";
 import { getAllCases } from "../../services/api";
 import { getMonth, getMonthBounds, getStateCode, isFullRange, rangeLabel, statesLabel } from "./filterUtils";
 
@@ -29,6 +31,11 @@ class PortalControl {
     this.container.remove();
   }
 }
+
+const GERMANY_BOUNDS = [[5.87, 47.27], [15.04, 55.06]];
+const DESKTOP_MAX_BOUNDS = [[2.0, 47.0], [18.0, 55.0]];
+// Looser on mobile so fitBounds can push Germany between top bar and list sheet.
+const MOBILE_MAX_BOUNDS = [[-4.0, 36.0], [24.0, 62.0]];
 
 const NO_SELECTION_FILTER = ["==", ["get", "id"], "__none__"];
 
@@ -79,6 +86,9 @@ export default function CasesMap({
   const [cases, setCases] = useState([]);
   const [status, setStatus] = useState("loading");
   const mapContainer = useRef(null);
+  const mobileBarRef = useRef(null);
+  const listPanelRef = useRef(null);
+  const isDesktop = useMediaQuery("(min-width: 992px)");
   const map = useRef(null);
   const geojsonRef = useRef({ type: "FeatureCollection", features: [] });
   const casesByIdRef = useRef(new Map());
@@ -88,6 +98,7 @@ export default function CasesMap({
   const [listLimit, setListLimit] = useState(LIST_PAGE_SIZE);
   const [filterOpen, setFilterOpen] = useState(true);
   const [filterControlEl, setFilterControlEl] = useState(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   // null = full data range; otherwise [fromMonth, toMonth] (absolute month indices, inclusive)
   const [range, setRange] = useState(null);
@@ -231,7 +242,6 @@ export default function CasesMap({
       minZoom: 2,
       maxZoom: 12,
       center: [10.5, 51.3],
-      maxBounds: [[2.0, 47.0], [18.0, 55.0]],
       style: {
         version: 8,
         glyphs: '/basemaps-assets-main/fonts/{fontstack}/{range}.pbf',
@@ -246,10 +256,6 @@ export default function CasesMap({
       },
     });
 
-    map.current.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
-    const filterControl = new PortalControl("cases-filter-control");
-    map.current.addControl(filterControl, "top-right");
-    setFilterControlEl(filterControl.container);
     map.current.doubleClickZoom.disable();
 
     map.current.on("load", () => {
@@ -395,7 +401,6 @@ export default function CasesMap({
         map.current = null;
       }
       setMapLoaded(false);
-      setFilterControlEl(null);
     };
   }, [pmtilesUrl]);
 
@@ -411,6 +416,40 @@ export default function CasesMap({
 
     source.setData(geojsonData);
   }, [geojsonData, mapLoaded]);
+
+  // Desktop: zoom + filter controls. Mobile: pinch only, Germany framed between top bar and list sheet.
+  useEffect(() => {
+    const mapInstance = map.current;
+    if (!mapInstance || !mapLoaded || isDesktop === null) {
+      return undefined;
+    }
+
+    if (!isDesktop) {
+      mapInstance.setMaxBounds(MOBILE_MAX_BOUNDS);
+      const top = mobileBarRef.current?.getBoundingClientRect().bottom ?? 64;
+      const bottom = listPanelRef.current?.offsetHeight ?? 0;
+      mapInstance.fitBounds(GERMANY_BOUNDS, {
+        padding: { top: top + 16, bottom: bottom + 16, left: 16, right: 16 },
+        duration: 0,
+      });
+      return undefined;
+    }
+
+    mapInstance.setMaxBounds(DESKTOP_MAX_BOUNDS);
+    const navigationControl = new maplibregl.NavigationControl({ showCompass: false });
+    const filterControl = new PortalControl("cases-filter-control");
+    mapInstance.addControl(navigationControl, "top-right");
+    mapInstance.addControl(filterControl, "top-right");
+    setFilterControlEl(filterControl.container);
+
+    return () => {
+      setFilterControlEl(null);
+      if (map.current === mapInstance) {
+        mapInstance.removeControl(filterControl);
+        mapInstance.removeControl(navigationControl);
+      }
+    };
+  }, [isDesktop, mapLoaded]);
 
   useEffect(() => {
     if (!map.current || !mapLoaded || !map.current.getLayer("selection-ring")) {
@@ -442,6 +481,8 @@ export default function CasesMap({
       current.includes(code) ? current.filter((item) => item !== code) : [...current, code].sort()
     );
   }, []);
+
+  const closeSheet = useCallback(() => setSheetOpen(false), []);
 
   const filters = {
     bounds,
@@ -477,10 +518,14 @@ export default function CasesMap({
             </button>,
             filterControlEl
           )}
-        {filterOpen && bounds && <FilterPanel filters={filters} onClose={() => setFilterOpen(false)} />}
+        {isDesktop && filterOpen && bounds && <FilterPanel filters={filters} onClose={() => setFilterOpen(false)} />}
+        {isDesktop === false && bounds && (
+          <MobileFilterBar ref={mobileBarRef} filters={filters} onOpen={() => setSheetOpen(true)} />
+        )}
       </div>
 
-      <aside className="cases-list-panel">
+      <aside className="cases-list-panel" ref={listPanelRef}>
+        <div className="sheet-grab" />
         <CaseList
           status={status}
           filteredCases={filteredCases}
@@ -493,6 +538,10 @@ export default function CasesMap({
           onReset={resetFilters}
         />
       </aside>
+
+      {isDesktop === false && bounds && (
+        <MobileFilterSheet filters={filters} open={sheetOpen} onClose={closeSheet} />
+      )}
     </div>
   );
 }
