@@ -16,6 +16,9 @@ export default function CaseList({
   activeCount,
   summary,
   limit,
+  openCaseIds,
+  onToggleCase,
+  onCollapseAll,
   onMore,
   onClearSelection,
   onReset,
@@ -48,11 +51,22 @@ export default function CaseList({
             </>
           )}
         </div>
-        {selection && (
-          <button type="button" className="cases-list-close" onClick={onClearSelection}>
-            Schliessen
+        <div className="cases-list-actions">
+          <button
+            type="button"
+            className="cases-list-close"
+            disabled={openCaseIds.size === 0}
+            title={openCaseIds.size > 0 ? `${openCaseIds.size} geöffnet` : undefined}
+            onClick={onCollapseAll}
+          >
+            Alle einklappen
           </button>
-        )}
+          {selection && (
+            <button type="button" className="cases-list-close" onClick={onClearSelection}>
+              Schliessen
+            </button>
+          )}
+        </div>
       </div>
 
       {status === "loading" && <p className="cases-list-empty">Fälle werden geladen…</p>}
@@ -69,7 +83,12 @@ export default function CaseList({
       {status === "ready" && visibleCases.length > 0 && (
         <div className="cases-list-scroll" ref={scrollRef}>
           {shownCases.map((caseItem) => (
-            <CaseDetails key={caseItem.uuid} props={caseItem} />
+            <CaseDetails
+              key={caseItem.uuid}
+              props={caseItem}
+              open={openCaseIds.has(String(caseItem.uuid))}
+              onOpenChange={(open) => onToggleCase(String(caseItem.uuid), open)}
+            />
           ))}
           {rest > 0 && (
             <button type="button" className="cases-list-more" onClick={onMore}>

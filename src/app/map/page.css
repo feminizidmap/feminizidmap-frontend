@@ -77,6 +77,17 @@
   transition: all 0.15s ease;
 }
 
+.cases-list-actions {
+  display: flex;
+  flex: none;
+  gap: 0.4rem;
+}
+
+.cases-list-close:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
 .cases-list-close:hover {
   border-color: #c5cedd;
   background: #ffffff;

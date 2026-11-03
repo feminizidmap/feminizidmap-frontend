@@ -8,9 +8,18 @@
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
+.case-card:not(.is-open) {
+  cursor: pointer;
+}
+
 .case-card:hover {
   border-color: #c5cedd;
   box-shadow: 0 2px 6px rgba(23, 32, 51, 0.08);
+}
+
+.case-card.is-open {
+  border-color: #172033;
+  box-shadow: inset 3px 0 0 #172033, 0 2px 8px rgba(23, 32, 51, 0.1);
 }
 
 .case-card-meta {

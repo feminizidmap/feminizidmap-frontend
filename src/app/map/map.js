@@ -96,6 +96,8 @@ export default function CasesMap({
   // { cases, filter } of the clicked cluster/point (filter drives the map highlight); null = no selection
   const [selection, setSelection] = useState(null);
   const [listLimit, setListLimit] = useState(LIST_PAGE_SIZE);
+  // uuids of cases whose details are open; survives filter changes and is highlighted on the map
+  const [openCaseIds, setOpenCaseIds] = useState(() => new Set());
   const [filterOpen, setFilterOpen] = useState(true);
   const [filterControlEl, setFilterControlEl] = useState(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -482,6 +484,18 @@ export default function CasesMap({
     );
   }, []);
 
+  const toggleOpenCase = useCallback((id, open) => {
+    setOpenCaseIds((current) => {
+      if (current.has(id) === open) return current;
+      const next = new Set(current);
+      if (open) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }, []);
+
+  const collapseAllCases = useCallback(() => setOpenCaseIds(new Set()), []);
+
   const closeSheet = useCallback(() => setSheetOpen(false), []);
 
   const filters = {
@@ -533,6 +547,9 @@ export default function CasesMap({
           activeCount={activeCount}
           summary={`${rangeLabel(from, to, bounds)} · ${statesLabel(states)}`}
           limit={listLimit}
+          openCaseIds={openCaseIds}
+          onToggleCase={toggleOpenCase}
+          onCollapseAll={collapseAllCases}
           onMore={() => setListLimit((limit) => limit + LIST_PAGE_SIZE)}
           onClearSelection={() => setSelection(null)}
           onReset={resetFilters}

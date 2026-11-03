@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import "./case-details.css";
 import {
   RISK_FACTORS,
@@ -69,7 +72,24 @@ function joinWithDetails(values, details) {
   return text || extra;
 }
 
-export default function CaseDetails({ props }) {
+// `open`/`onOpenChange` are optional; without them the card keeps its own open state.
+export default function CaseDetails({ props, open, onOpenChange }) {
+  const [ownOpen, setOwnOpen] = useState(false);
+  const controlled = open !== undefined;
+  const isOpen = controlled ? open : ownOpen;
+  const setOpen = (next) => {
+    if (!controlled) setOwnOpen(next);
+    onOpenChange?.(next);
+  };
+
+  // Clicking anywhere on a closed card opens it; the summary toggles natively.
+  const handleCardClick = (event) => {
+    if (isOpen || event.target.closest("summary") || window.getSelection()?.toString()) {
+      return;
+    }
+    setOpen(true);
+  };
+
   const crime = first(props.crime) ?? {};
   const victim = first(props.victims) ?? {};
   const perpetrator = first(props.perpetrators) ?? {};
@@ -96,7 +116,7 @@ export default function CaseDetails({ props }) {
   ];
 
   return (
-    <article className="case-card">
+    <article className={`case-card${isOpen ? " is-open" : ""}`} onClick={handleCardClick}>
       <div className="case-card-meta">
         {formatDate(props.crime_date) && <b>{formatDate(props.crime_date)}</b>}
         {place && <span>{place}</span>}
@@ -143,8 +163,14 @@ export default function CaseDetails({ props }) {
         </span>
       </p>
 
-      <details className="case-details">
-        <summary>Alle Details</summary>
+      <details
+        className="case-details"
+        open={isOpen}
+        onToggle={(event) => {
+          if (event.currentTarget.open !== isOpen) setOpen(event.currentTarget.open);
+        }}
+      >
+        <summary>{isOpen ? "Details ausblenden" : "Alle Details"}</summary>
         <div className="case-details-content">
           <DetailsSection
             title="Opfer"
