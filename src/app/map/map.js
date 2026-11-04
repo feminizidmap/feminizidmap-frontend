@@ -42,7 +42,11 @@ const HAS_OPEN_CASE = ["any", ["==", ["get", "hasOpen"], true], ["==", ["get", "
 const MARKER_COLOR = ["case", HAS_OPEN_CASE, "#172033", "#A541B0"];
 const MARKER_SORT_KEY = ["case", HAS_OPEN_CASE, 1, 0];
 
-const NO_SELECTION_FILTER = ["==", ["get", "id"], "__none__"];
+// Any marker containing a selected case gets the ring, so the selection survives re-clustering on zoom.
+const HAS_SELECTED_CASE = ["any", ["==", ["get", "hasSelected"], true], ["==", ["get", "selected"], true]];
+const isSelectedFeature = (feature) =>
+  feature?.properties?.hasSelected === true || feature?.properties?.selected === true;
+const RESELECT_HINT = "Erneut klicken: Auswahl aufheben";
 
 function normalizeCoordinate(value, isLatitude) {
   if (value === null || value === undefined || value === "") {
@@ -98,7 +102,7 @@ export default function CasesMap({
   const geojsonRef = useRef({ type: "FeatureCollection", features: [] });
   const casesByIdRef = useRef(new Map());
   const languageRef = useRef(language);
-  // { cases, filter } of the clicked cluster/point (filter drives the map highlight); null = no selection
+  // { cases, ids } of the clicked cluster/point; null = no selection
   const [selection, setSelection] = useState(null);
   const [listLimit, setListLimit] = useState(LIST_PAGE_SIZE);
   // uuids of cases whose details are open; survives filter changes and is highlighted on the map
@@ -215,10 +219,11 @@ export default function CasesMap({
           crime_date: caseItem.crime_date || "",
           city: caseItem?.crime?.crime_city || "",
           open: openCaseIds.has(String(caseItem.uuid)),
+          selected: selection?.ids.has(String(caseItem.uuid)) ?? false,
         },
       })),
     }),
-    [filteredEntries, openCaseIds]
+    [filteredEntries, openCaseIds, selection]
   );
 
   useEffect(() => {
@@ -277,6 +282,7 @@ export default function CasesMap({
         clusterRadius: 50,
         clusterProperties: {
           hasOpen: ["any", ["==", ["get", "open"], true]],
+          hasSelected: ["any", ["==", ["get", "selected"], true]],
         },
       });
 
@@ -285,7 +291,7 @@ export default function CasesMap({
         id: "selection-ring",
         type: "circle",
         source: "cases",
-        filter: NO_SELECTION_FILTER,
+        filter: HAS_SELECTED_CASE,
         paint: {
           "circle-color": "#ffffff",
           "circle-radius": ["case", ["has", "point_count"], ["step", ["get", "point_count"], 17, 10, 23, 20, 29, 50, 35], 9],
@@ -348,6 +354,10 @@ export default function CasesMap({
         if (!clusterFeature?.properties) {
           return;
         }
+        if (isSelectedFeature(clusterFeature)) {
+          setSelection(null);
+          return;
+        }
 
         const clusterId = clusterFeature.properties.cluster_id;
         const pointCount = clusterFeature.properties.point_count;
@@ -364,7 +374,7 @@ export default function CasesMap({
 
           setSelection({
             cases: selected,
-            filter: ["all", ["has", "point_count"], ["==", ["get", "cluster_id"], clusterId]],
+            ids: new Set(selected.map((caseItem) => String(caseItem.uuid))),
           });
           setListLimit(LIST_PAGE_SIZE);
         } catch (error) {
@@ -377,16 +387,17 @@ export default function CasesMap({
         if (!selectedId) {
           return;
         }
+        if (isSelectedFeature(e.features[0])) {
+          setSelection(null);
+          return;
+        }
 
         const selected = casesByIdRef.current.get(String(selectedId));
         if (!selected) {
           return;
         }
 
-        setSelection({
-          cases: [selected],
-          filter: ["all", ["!", ["has", "point_count"]], ["==", ["get", "id"], String(selectedId)]],
-        });
+        setSelection({ cases: [selected], ids: new Set([String(selectedId)]) });
         setListLimit(LIST_PAGE_SIZE);
       });
 
@@ -398,18 +409,18 @@ export default function CasesMap({
         }
       });
 
-      map.current.on("mouseenter", "clusters", () => {
-        map.current.getCanvas().style.cursor = "pointer";
-      });
-      map.current.on("mouseleave", "clusters", () => {
-        map.current.getCanvas().style.cursor = "";
-      });
-      map.current.on("mouseenter", "unclustered-point", () => {
-        map.current.getCanvas().style.cursor = "pointer";
-      });
-      map.current.on("mouseleave", "unclustered-point", () => {
-        map.current.getCanvas().style.cursor = "";
-      });
+      for (const layer of ["clusters", "unclustered-point"]) {
+        map.current.on("mousemove", layer, (e) => {
+          const canvas = map.current.getCanvas();
+          canvas.style.cursor = "pointer";
+          canvas.title = isSelectedFeature(e.features?.[0]) ? RESELECT_HINT : "";
+        });
+        map.current.on("mouseleave", layer, () => {
+          const canvas = map.current.getCanvas();
+          canvas.style.cursor = "";
+          canvas.title = "";
+        });
+      }
     });
 
     return () => {
@@ -468,12 +479,16 @@ export default function CasesMap({
     };
   }, [isDesktop, mapLoaded]);
 
+  // Esc clears the selection, except while typing or while the mobile filter sheet handles Esc itself.
   useEffect(() => {
-    if (!map.current || !mapLoaded || !map.current.getLayer("selection-ring")) {
-      return;
-    }
-    map.current.setFilter("selection-ring", selection?.filter ?? NO_SELECTION_FILTER);
-  }, [selection, mapLoaded]);
+    const handleKey = (event) => {
+      if (event.key !== "Escape" || sheetOpen) return;
+      if (event.target.closest?.("input, textarea, select, [contenteditable]")) return;
+      setSelection(null);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [sheetOpen]);
 
   // Changing any filter clears the cluster selection and resets the list pagination.
   useEffect(() => {

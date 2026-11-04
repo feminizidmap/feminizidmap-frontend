@@ -62,8 +62,13 @@ export default function CaseList({
             Alle einklappen
           </button>
           {selection && (
-            <button type="button" className="cases-list-close" onClick={onClearSelection}>
-              Schliessen
+            <button
+              type="button"
+              className="cases-list-close"
+              title="Zurück zu allen gefilterten Fällen (Esc)"
+              onClick={onClearSelection}
+            >
+              Auswahl aufheben
             </button>
           )}
         </div>
