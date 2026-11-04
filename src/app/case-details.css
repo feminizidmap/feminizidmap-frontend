@@ -1,15 +1,13 @@
 .case-card {
+  position: relative;
+  overflow: hidden;
   margin-bottom: 0.6rem;
-  padding: 0.85rem 1rem 0.8rem;
+  padding: 0;
   border: 1px solid #e1e5ec;
   border-radius: 6px;
   background: #fff;
   box-shadow: 0 1px 2px rgba(23, 32, 51, 0.05);
   transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.case-card:not(.is-open) {
-  cursor: pointer;
 }
 
 .case-card:hover {
@@ -19,7 +17,98 @@
 
 .case-card.is-open {
   border-color: #172033;
-  box-shadow: inset 3px 0 0 #172033, 0 2px 8px rgba(23, 32, 51, 0.1);
+  box-shadow: 0 2px 8px rgba(23, 32, 51, 0.1);
+}
+
+/* Left bar as a pseudo-element so the footer strip background doesn't cover it */
+.case-card.is-open::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  width: 3px;
+  background: #172033;
+}
+
+.case-card-head {
+  position: relative;
+  padding: 0.85rem 3.1rem 0.8rem 1rem;
+  cursor: pointer;
+}
+
+.case-card-body {
+  padding: 0 1rem 0.2rem;
+}
+
+.case-card-body[hidden] {
+  display: none;
+}
+
+/* Toggle 1: round chevron, always in the same place top-right */
+.case-card-chevron {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid #d9dee8;
+  border-radius: 50%;
+  background: #fff;
+  color: #172033;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.case-card-head:hover .case-card-chevron,
+.case-card-chevron:hover {
+  border-color: #172033;
+}
+
+.case-card.is-open .case-card-chevron {
+  background: #172033;
+  border-color: #172033;
+  color: #fff;
+}
+
+/* Toggle 2: full-width footer strip */
+.case-card-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  height: 38px;
+  border: 0;
+  border-top: 1px solid #e6e9ef;
+  background: #f6f8fb;
+  color: #172033;
+  font-size: 0.84rem;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+
+.case-card-toggle:hover {
+  background: #eceff4;
+}
+
+.case-card-chevron svg,
+.case-card-toggle svg {
+  transition: transform 0.2s;
+}
+
+.case-card.is-open .case-card-chevron svg,
+.case-card.is-open .case-card-toggle svg {
+  transform: rotate(180deg);
+}
+
+.case-card-chevron:focus-visible,
+.case-card-toggle:focus-visible {
+  outline: 2px solid #a541b0;
+  outline-offset: 2px;
 }
 
 .case-card-meta {
@@ -113,21 +202,6 @@
 .case-card-status b {
   color: #172033;
   font-weight: 600;
-}
-
-.case-details {
-  margin-top: 0.55rem;
-}
-
-.case-details summary {
-  cursor: pointer;
-  color: #243455;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.case-details-content {
-  margin-top: 0.4rem;
 }
 
 .case-details-section {

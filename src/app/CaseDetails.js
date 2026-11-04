@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import "./case-details.css";
 import {
   RISK_FACTORS,
@@ -63,6 +63,24 @@ function RiskFactors({ perpetrator }) {
   );
 }
 
+function ChevronIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  );
+}
+
 function joinWithDetails(values, details) {
   const text = cleanList(values).join(", ");
   const extra = clean(details);
@@ -82,12 +100,18 @@ export default function CaseDetails({ props, open, onOpenChange }) {
     onOpenChange?.(next);
   };
 
-  // Clicking anywhere on a closed card opens it; the summary toggles natively.
-  const handleCardClick = (event) => {
-    if (isOpen || event.target.closest("summary") || window.getSelection()?.toString()) {
-      return;
+  const bodyId = useId();
+  const toggleLabel = isOpen ? "Details ausblenden" : "Alle Details anzeigen";
+
+  // Chevron and footer buttons toggle; so does a click on the head, unless the user is selecting text.
+  const handleToggleClick = (event) => {
+    event.stopPropagation();
+    setOpen(!isOpen);
+  };
+  const handleHeadClick = () => {
+    if (!window.getSelection()?.toString()) {
+      setOpen(!isOpen);
     }
-    setOpen(true);
   };
 
   const crime = first(props.crime) ?? {};
@@ -116,123 +140,140 @@ export default function CaseDetails({ props, open, onOpenChange }) {
   ];
 
   return (
-    <article className={`case-card${isOpen ? " is-open" : ""}`} onClick={handleCardClick}>
-      <div className="case-card-meta">
-        {formatDate(props.crime_date) && <b>{formatDate(props.crime_date)}</b>}
-        {place && <span>{place}</span>}
-        {props.attempt === true && <span className="case-card-flag">Versuch, überlebt</span>}
+    <article className={`case-card${isOpen ? " is-open" : ""}`}>
+      <div className="case-card-head" onClick={handleHeadClick}>
+        <button
+          type="button"
+          className="case-card-chevron"
+          aria-expanded={isOpen}
+          aria-controls={bodyId}
+          aria-label={toggleLabel}
+          title={toggleLabel}
+          onClick={handleToggleClick}
+        >
+          <ChevronIcon />
+        </button>
+
+        <div className="case-card-meta">
+          {formatDate(props.crime_date) && <b>{formatDate(props.crime_date)}</b>}
+          {place && <span>{place}</span>}
+          {props.attempt === true && <span className="case-card-flag">Versuch, überlebt</span>}
+        </div>
+
+        <h3 className="case-card-name">
+          {clean(victim.name) ?? "Name unbekannt"}
+          <span>, {victimAge ? `${victimAge} Jahre` : "Alter unbekannt"}</span>
+        </h3>
+
+        {tags.some(Boolean) && (
+          <div className="case-card-tags">
+            {tags.map(
+              (tag, index) =>
+                tag && (
+                  <span key={index} className={`case-card-tag${index === 0 ? " is-type" : ""}`}>
+                    {tag}
+                  </span>
+                )
+            )}
+          </div>
+        )}
+
+        {(relationship || perpetratorAge || causeOfDeath) && (
+          <p className="case-card-summary">
+            {(relationship || perpetratorAge) && (
+              <>
+                {perpetratorLabel(perpetrator)}: {relationship && <b>{relationship}</b>}
+                {relationship && perpetratorAge && ", "}
+                {perpetratorAge && `${perpetratorAge} J.`}
+              </>
+            )}
+            {(relationship || perpetratorAge) && causeOfDeath && " · "}
+            {causeOfDeath}
+          </p>
+        )}
+
+        <p className="case-card-status">
+          <i style={{ background: status.color }} />
+          <span>
+            <b>{status.label}</b>
+            {sentence && sentence !== "Entfällt" && ` · ${sentence}`}
+          </span>
+        </p>
+
       </div>
 
-      <h3 className="case-card-name">
-        {clean(victim.name) ?? "Name unbekannt"}
-        <span>, {victimAge ? `${victimAge} Jahre` : "Alter unbekannt"}</span>
-      </h3>
+      <div className="case-card-body" id={bodyId} hidden={!isOpen}>
+        <DetailsSection
+          title="Opfer"
+          rows={[
+            ["Name", clean(victim.name)],
+            ["Alter", victimAge && `${victimAge} Jahre`],
+            ["Familienstand", clean(victim.family_status)],
+            ["Beruf", withDetails(victim.profession, victim.profession_details)],
+            ["Frühere Gewalt bekannt", clean(victim.reports_on_violence)],
+            ["Hinterbliebene", dependantsText(victim.surviving_dependants)],
+          ]}
+        />
+        <DetailsSection
+          title={perpetratorLabel(perpetrator)}
+          rows={[
+            ["Beziehung zum Opfer", relationship],
+            ["Alter", perpetratorAge && `${perpetratorAge} Jahre`],
+            ["Beruf", withDetails(perpetrator.profession, perpetrator.profession_details)],
+            ["Wohnort", clean(perpetrator.perpetrator_city)],
+            ["Suizid", suicide !== "Nein" ? suicide : null],
+            ["Risikofaktoren", <RiskFactors key="risk" perpetrator={perpetrator} />],
+          ]}
+        />
+        {/* acts_of_violence_details is intentionally not shown; it can be very graphic. */}
+        <DetailsSection
+          title="Tat"
+          rows={[
+            ["Tatort", [clean(crime.crime_city), stateName(props)].filter(Boolean).join(", ")],
+            ["Fundort", clean(crime.location_of_body)],
+            ["Todesursache", causeOfDeath],
+            ["Tatmittel", joinWithDetails(crime.weapons, crime.weapon_details)],
+            ["Weitere Gewalt", cleanList(crime.further_acts_of_violence).join(", ")],
+            ["Motiv", joinWithDetails(crime.motives, crime.motive_details)],
+            ["Bekannt durch", clean(props.report_of_crime)],
+          ]}
+        />
+        <DetailsSection
+          title="Justiz"
+          rows={[
+            ["Status", clean(perpetrator.judical_status)],
+            ["Urteil", sentence],
+          ]}
+        >
+          {sentenceDetails && <p className="case-details-note">{sentenceDetails}</p>}
+        </DetailsSection>
+        {mediaLabels.length > 0 && (
+          <DetailsSection
+            title="Medien"
+            rows={[
+              [
+                "Bezeichnet als",
+                <>
+                  {mediaLabels.map((label) => `„${label}“`).join(", ")}
+                  <span className="case-details-hint">Begriff aus der Berichterstattung</span>
+                </>,
+              ],
+            ]}
+          />
+        )}
+        {footer.length > 0 && <p className="case-details-id">{footer.join(" · ")}</p>}
+      </div>
 
-      {tags.some(Boolean) && (
-        <div className="case-card-tags">
-          {tags.map(
-            (tag, index) =>
-              tag && (
-                <span key={index} className={`case-card-tag${index === 0 ? " is-type" : ""}`}>
-                  {tag}
-                </span>
-              )
-          )}
-        </div>
-      )}
-
-      {(relationship || perpetratorAge || causeOfDeath) && (
-        <p className="case-card-summary">
-          {(relationship || perpetratorAge) && (
-            <>
-              {perpetratorLabel(perpetrator)}: {relationship && <b>{relationship}</b>}
-              {relationship && perpetratorAge && ", "}
-              {perpetratorAge && `${perpetratorAge} J.`}
-            </>
-          )}
-          {(relationship || perpetratorAge) && causeOfDeath && " · "}
-          {causeOfDeath}
-        </p>
-      )}
-
-      <p className="case-card-status">
-        <i style={{ background: status.color }} />
-        <span>
-          <b>{status.label}</b>
-          {sentence && sentence !== "Entfällt" && ` · ${sentence}`}
-        </span>
-      </p>
-
-      <details
-        className="case-details"
-        open={isOpen}
-        onToggle={(event) => {
-          if (event.currentTarget.open !== isOpen) setOpen(event.currentTarget.open);
-        }}
+      <button
+        type="button"
+        className="case-card-toggle"
+        aria-expanded={isOpen}
+        aria-controls={bodyId}
+        onClick={handleToggleClick}
       >
-        <summary>{isOpen ? "Details ausblenden" : "Alle Details"}</summary>
-        <div className="case-details-content">
-          <DetailsSection
-            title="Opfer"
-            rows={[
-              ["Name", clean(victim.name)],
-              ["Alter", victimAge && `${victimAge} Jahre`],
-              ["Familienstand", clean(victim.family_status)],
-              ["Beruf", withDetails(victim.profession, victim.profession_details)],
-              ["Frühere Gewalt bekannt", clean(victim.reports_on_violence)],
-              ["Hinterbliebene", dependantsText(victim.surviving_dependants)],
-            ]}
-          />
-          <DetailsSection
-            title={perpetratorLabel(perpetrator)}
-            rows={[
-              ["Beziehung zum Opfer", relationship],
-              ["Alter", perpetratorAge && `${perpetratorAge} Jahre`],
-              ["Beruf", withDetails(perpetrator.profession, perpetrator.profession_details)],
-              ["Wohnort", clean(perpetrator.perpetrator_city)],
-              ["Suizid", suicide !== "Nein" ? suicide : null],
-              ["Risikofaktoren", <RiskFactors key="risk" perpetrator={perpetrator} />],
-            ]}
-          />
-          {/* acts_of_violence_details is intentionally not shown; it can be very graphic. */}
-          <DetailsSection
-            title="Tat"
-            rows={[
-              ["Tatort", [clean(crime.crime_city), stateName(props)].filter(Boolean).join(", ")],
-              ["Fundort", clean(crime.location_of_body)],
-              ["Todesursache", causeOfDeath],
-              ["Tatmittel", joinWithDetails(crime.weapons, crime.weapon_details)],
-              ["Weitere Gewalt", cleanList(crime.further_acts_of_violence).join(", ")],
-              ["Motiv", joinWithDetails(crime.motives, crime.motive_details)],
-              ["Bekannt durch", clean(props.report_of_crime)],
-            ]}
-          />
-          <DetailsSection
-            title="Justiz"
-            rows={[
-              ["Status", clean(perpetrator.judical_status)],
-              ["Urteil", sentence],
-            ]}
-          >
-            {sentenceDetails && <p className="case-details-note">{sentenceDetails}</p>}
-          </DetailsSection>
-          {mediaLabels.length > 0 && (
-            <DetailsSection
-              title="Medien"
-              rows={[
-                [
-                  "Bezeichnet als",
-                  <>
-                    {mediaLabels.map((label) => `„${label}“`).join(", ")}
-                    <span className="case-details-hint">Begriff aus der Berichterstattung</span>
-                  </>,
-                ],
-              ]}
-            />
-          )}
-          {footer.length > 0 && <p className="case-details-id">{footer.join(" · ")}</p>}
-        </div>
-      </details>
+        <span>{toggleLabel}</span>
+        <ChevronIcon />
+      </button>
     </article>
   );
 }
