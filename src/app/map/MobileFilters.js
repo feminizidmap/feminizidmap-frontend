@@ -1,7 +1,8 @@
 "use client";
 
 import { forwardRef, useEffect } from "react";
-import { FunnelIcon, StateToggleGrid, YearPresets } from "./FilterControls";
+import { StateToggleGrid, YearPresets } from "./FilterControls";
+import { FunnelIcon } from "./MapIcons";
 import MonthRangeSlider from "./MonthRangeSlider";
 import { STATES, isFullRange, rangeLabel } from "./filterUtils";
 

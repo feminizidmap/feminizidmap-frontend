@@ -36,24 +36,6 @@ export function YearPresets({ bounds, from, to, onChange, className = "" }) {
   );
 }
 
-export function FunnelIcon({ size = 16 }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M3 4h18l-7 8.5V19l-4 2v-8.5z" />
-    </svg>
-  );
-}
-
 export function StateChecklist({ states, stateCounts, onToggle }) {
   const [query, setQuery] = useState("");
   const needle = query.trim().toLocaleLowerCase("de");

@@ -8,7 +8,7 @@ import { layers, namedFlavor } from "@protomaps/basemaps";
 import "maplibre-gl/dist/maplibre-gl.css";
 import CaseList, { LIST_PAGE_SIZE } from "./CaseList";
 import FilterPanel from "./FilterPanel";
-import { FunnelIcon } from "./FilterControls";
+import { FunnelIcon, ResetViewIcon } from "./MapIcons";
 import { MobileFilterBar, MobileFilterSheet } from "./MobileFilters";
 import useMediaQuery from "./useMediaQuery";
 import { getAllCases } from "../../services/api";
@@ -33,6 +33,7 @@ class PortalControl {
 }
 
 const GERMANY_BOUNDS = [[5.87, 47.27], [15.04, 55.06]];
+const DESKTOP_HOME = { center: [10.5, 51.3], zoom: 5 };
 const DESKTOP_MAX_BOUNDS = [[2.0, 47.0], [18.0, 55.0]];
 // Looser on mobile so fitBounds can push Germany between top bar and list sheet.
 const MOBILE_MAX_BOUNDS = [[-4.0, 36.0], [24.0, 62.0]];
@@ -108,7 +109,10 @@ export default function CasesMap({
   // uuids of cases whose details are open; survives filter changes and is highlighted on the map
   const [openCaseIds, setOpenCaseIds] = useState(() => new Set());
   const [filterOpen, setFilterOpen] = useState(false);
-  const [filterControlEl, setFilterControlEl] = useState(null);
+  const [actionsEl, setActionsEl] = useState(null);
+  // initial camera ("home"); the reset button is disabled while the map is there
+  const homeRef = useRef(null);
+  const [atHome, setAtHome] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   // null = full data range; otherwise [fromMonth, toMonth] (absolute month indices, inclusive)
@@ -251,10 +255,10 @@ export default function CasesMap({
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      zoom: 5,
+      zoom: DESKTOP_HOME.zoom,
       minZoom: 2,
       maxZoom: 12,
-      center: [10.5, 51.3],
+      center: DESKTOP_HOME.center,
       style: {
         version: 8,
         glyphs: '/basemaps-assets-main/fonts/{fontstack}/{range}.pbf',
@@ -445,6 +449,12 @@ export default function CasesMap({
     source.setData(geojsonData);
   }, [geojsonData, mapLoaded]);
 
+  // Max bounds may adjust the requested camera; store the camera the map actually ends up with as home.
+  const jumpHome = (mapInstance, camera) => {
+    mapInstance.jumpTo(camera);
+    homeRef.current = { center: mapInstance.getCenter().toArray(), zoom: mapInstance.getZoom() };
+  };
+
   // Desktop: zoom + filter controls. Mobile: pinch only, Germany framed between top bar and list sheet.
   useEffect(() => {
     const mapInstance = map.current;
@@ -456,28 +466,54 @@ export default function CasesMap({
       mapInstance.setMaxBounds(MOBILE_MAX_BOUNDS);
       const top = mobileBarRef.current?.getBoundingClientRect().bottom ?? 64;
       const bottom = listPanelRef.current?.offsetHeight ?? 0;
-      mapInstance.fitBounds(GERMANY_BOUNDS, {
+      const camera = mapInstance.cameraForBounds(GERMANY_BOUNDS, {
         padding: { top: top + 16, bottom: bottom + 16, left: 16, right: 16 },
-        duration: 0,
       });
+      jumpHome(mapInstance, { center: camera.center, zoom: camera.zoom });
       return undefined;
     }
 
     mapInstance.setMaxBounds(DESKTOP_MAX_BOUNDS);
+    jumpHome(mapInstance, DESKTOP_HOME);
     const navigationControl = new maplibregl.NavigationControl({ showCompass: false });
-    const filterControl = new PortalControl("cases-filter-control");
+    const actionsControl = new PortalControl("cases-map-actions");
     mapInstance.addControl(navigationControl, "top-right");
-    mapInstance.addControl(filterControl, "top-right");
-    setFilterControlEl(filterControl.container);
+    mapInstance.addControl(actionsControl, "top-right");
+    setActionsEl(actionsControl.container);
 
     return () => {
-      setFilterControlEl(null);
+      setActionsEl(null);
       if (map.current === mapInstance) {
-        mapInstance.removeControl(filterControl);
+        mapInstance.removeControl(actionsControl);
         mapInstance.removeControl(navigationControl);
       }
     };
   }, [isDesktop, mapLoaded]);
+
+  useEffect(() => {
+    const mapInstance = map.current;
+    if (!mapInstance || !mapLoaded) {
+      return undefined;
+    }
+    const updateAtHome = () => {
+      const home = homeRef.current;
+      setAtHome(
+        !home ||
+          (Math.abs(mapInstance.getZoom() - home.zoom) < 0.01 &&
+            mapInstance.getCenter().distanceTo(maplibregl.LngLat.convert(home.center)) < 2000)
+      );
+    };
+    updateAtHome();
+    mapInstance.on("moveend", updateAtHome);
+    return () => mapInstance.off("moveend", updateAtHome);
+  }, [mapLoaded, isDesktop]);
+
+  const resetView = useCallback(() => {
+    if (map.current && homeRef.current) {
+      map.current.flyTo(homeRef.current);
+    }
+  }, []);
+
 
   // Esc clears the selection, except while typing or while the mobile filter sheet handles Esc itself.
   useEffect(() => {
@@ -547,22 +583,36 @@ export default function CasesMap({
     <div className="cases-map-layout">
       <div className="cases-map-shell">
         <div ref={mapContainer} className="cases-map-canvas" />
-        {filterControlEl &&
+        {actionsEl &&
           createPortal(
-            <button
-              type="button"
-              className={`filter-toggle${filterOpen ? " is-active" : ""}`}
-              title="Filter"
-              aria-label="Filter"
-              aria-expanded={filterOpen}
-              onClick={() => setFilterOpen((open) => !open)}
-            >
-              <FunnelIcon />
-              {activeCount > 0 && <span className="filter-badge">{activeCount}</span>}
-            </button>,
-            filterControlEl
+            <>
+              <button
+                type="button"
+                className={`map-action${filterOpen ? " is-active" : ""}`}
+                title="Filter"
+                aria-label="Filter"
+                aria-expanded={filterOpen}
+                onClick={() => setFilterOpen((open) => !open)}
+              >
+                <FunnelIcon />
+                {activeCount > 0 && <span className="filter-badge">{activeCount}</span>}
+              </button>
+              <button
+                type="button"
+                className="map-action"
+                title="Kartenansicht zurücksetzen"
+                aria-label="Kartenansicht zurücksetzen"
+                disabled={atHome}
+                onClick={resetView}
+              >
+                <ResetViewIcon />
+              </button>
+            </>,
+            actionsEl
           )}
-        {isDesktop && filterOpen && bounds && <FilterPanel filters={filters} onClose={() => setFilterOpen(false)} />}
+        {isDesktop && filterOpen && bounds && (
+          <FilterPanel filters={filters} onClose={() => setFilterOpen(false)} />
+        )}
         {isDesktop === false && bounds && (
           <MobileFilterBar ref={mobileBarRef} filters={filters} onOpen={() => setSheetOpen(true)} />
         )}

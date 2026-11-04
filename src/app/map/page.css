@@ -258,12 +258,14 @@
   color: #fff;
 }
 
-/* Filter toggle (MapLibre control below the zoom buttons) */
-.cases-filter-control {
-  position: relative;
+/* Map action buttons (MapLibre control below the zoom buttons) */
+.cases-map-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.filter-toggle {
+.map-action {
   position: relative;
   display: flex;
   align-items: center;
@@ -277,11 +279,18 @@
   color: #333;
 }
 
-.filter-toggle:hover {
+.map-action:hover:not(:disabled) {
   background: #f4f4f4;
 }
 
-.filter-toggle.is-active {
+.map-action:disabled {
+  color: #b7bdc7;
+  cursor: default;
+  background: #fff;
+}
+
+.map-action.is-active,
+.map-action.is-active:hover {
   background: #172033;
   border-color: #172033;
   color: #fff;
@@ -302,7 +311,7 @@
   line-height: 1;
 }
 
-.filter-toggle .filter-badge {
+.map-action .filter-badge {
   position: absolute;
   top: -7px;
   right: -7px;
