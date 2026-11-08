@@ -1,8 +1,9 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.feminizidmap.org";
+const CASES_URL = process.env.NEXT_PUBLIC_CASES_URL || "https://api.feminizidmap.org/cases";
 
 export async function getCases(params = {}) {
-  const query = new URLSearchParams(params).toString();
-  const response = await fetch(`${API_URL}/cases${query ? `?${query}` : ""}`);
+  const url = new URL(CASES_URL);
+  Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
+  const response = await fetch(url);
 
   if (!response.ok) {
     throw new Error(`API error: ${response.status} ${response.statusText}`);
