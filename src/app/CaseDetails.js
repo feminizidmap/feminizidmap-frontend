@@ -12,7 +12,7 @@ import {
   judicialStatus,
   knownAge,
   perpetratorLabel,
-  stateName,
+  placeLabel,
   withDetails,
 } from "./caseFormat";
 
@@ -118,7 +118,7 @@ export default function CaseDetails({ props, open, onOpenChange }) {
   const victim = first(props.victims) ?? {};
   const perpetrator = first(props.perpetrators) ?? {};
 
-  const place = [clean(crime.crime_city), stateName(props)].filter(Boolean).join(" · ");
+  const place = placeLabel(props, " · ");
   const victimAge = knownAge(victim.age);
   const perpetratorAge = knownAge(perpetrator.age);
   const relationship = withDetails(victim.relationship_perpetrator, victim.relationship_perpetrator_details);
@@ -229,7 +229,7 @@ export default function CaseDetails({ props, open, onOpenChange }) {
         <DetailsSection
           title="Tat"
           rows={[
-            ["Tatort", [clean(crime.crime_city), stateName(props)].filter(Boolean).join(", ")],
+            ["Tatort", placeLabel(props, ", ")],
             ["Fundort", clean(crime.location_of_body)],
             ["Todesursache", causeOfDeath],
             ["Tatmittel", joinWithDetails(crime.weapons, crime.weapon_details)],

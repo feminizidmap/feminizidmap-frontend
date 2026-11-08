@@ -44,6 +44,14 @@ export function stateName(caseItem) {
   return STATES[getStateCode(caseItem)] ?? null;
 }
 
+// City plus state, without repeating the state for city-states ("Berlin", not "Berlin · Berlin").
+export function placeLabel(caseItem, separator) {
+  const city = clean(first(caseItem?.crime)?.crime_city);
+  const state = stateName(caseItem);
+  const showState = state && state.toLowerCase() !== city?.toLowerCase();
+  return [city, showState ? state : null].filter(Boolean).join(separator);
+}
+
 export function perpetratorLabel(perpetrator) {
   return perpetrator?.gender === "weiblich" ? "Täterin" : "Täter";
 }

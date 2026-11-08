@@ -50,9 +50,30 @@ export function stateCodeFromName(value) {
   return STATE_ALIASES[normalizeStateName(value)] ?? null;
 }
 
+// Geocoding often leaves the state empty for the city-states, so derive it from the city.
+// Exact match only: "Berlingen" or "Hamburger Straße" must not count.
+const CITY_STATES = {
+  berlin: "BE",
+  hamburg: "HH",
+  bremen: "HB",
+  bremerhaven: "HB",
+};
+
+export function stateCodeFromCity(value) {
+  if (typeof value !== "string" || !value.trim()) {
+    return null;
+  }
+  return CITY_STATES[normalizeStateName(value).replace(/^stadtgebiet /, "")] ?? null;
+}
+
 export function getStateCode(caseItem) {
   const perpetrator = Array.isArray(caseItem?.perpetrators) ? caseItem.perpetrators[0] : caseItem?.perpetrators;
-  return stateCodeFromName(caseItem?.crime?.crime_state) ?? stateCodeFromName(perpetrator?.perpetrator_state);
+  return (
+    stateCodeFromName(caseItem?.crime?.crime_state) ??
+    stateCodeFromCity(caseItem?.crime?.crime_city) ??
+    stateCodeFromName(perpetrator?.perpetrator_state) ??
+    stateCodeFromCity(perpetrator?.perpetrator_city)
+  );
 }
 
 // Months are absolute indices (year * 12 + month0) so ranges can span years.
