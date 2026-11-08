@@ -11,7 +11,7 @@ import FilterPanel from "./FilterPanel";
 import { FunnelIcon, ResetViewIcon } from "./MapIcons";
 import { MobileFilterBar, MobileFilterSheet } from "./MobileFilters";
 import useMediaQuery from "./useMediaQuery";
-import { getAllCases } from "../../services/api";
+import { getCases } from "../../services/api";
 import { getMonth, getMonthBounds, getStateCode, isFullRange, rangeLabel, statesLabel } from "./filterUtils";
 
 let protocolRegistered = false;
@@ -123,7 +123,7 @@ export default function CasesMap({
   useEffect(() => {
     let cancelled = false;
 
-    getAllCases()
+    getCases()
       .then(({ data }) => {
         if (cancelled) return;
         setCases(data ?? []);
