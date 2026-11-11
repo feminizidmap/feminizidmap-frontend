@@ -325,13 +325,14 @@
 /* Desktop filter panel */
 .filter-panel {
   position: absolute;
-  top: 79px;
+  /* full map height; the bottom gap keeps the attribution visible */
+  top: 10px;
+  bottom: 26px;
   right: 49px;
   z-index: 3;
   display: flex;
   flex-direction: column;
   width: 340px;
-  max-height: calc(100% - 95px);
   background: #fff;
   border-top: 4px solid #000;
   box-shadow: 0 2px 10px rgba(23, 32, 51, 0.14);
@@ -365,6 +366,7 @@
 }
 
 .filter-panel-body {
+  flex: 1;
   min-height: 0;
   overflow-y: auto;
 }
