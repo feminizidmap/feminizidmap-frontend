@@ -129,3 +129,67 @@ export function statesLabel(states) {
   }
   return `${states.length} Bundesländer`;
 }
+
+// Facet filters: Art des Femi(ni)zids, Versuch, Geschlecht des*der Täter*in
+
+function firstOf(value) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+// The API has trailing spaces in its values ("Familiär ").
+export function getTypeKey(caseItem) {
+  const type = firstOf(caseItem?.victims)?.type_of_feminicide;
+  return typeof type === "string" && type.trim() ? type.trim() : null;
+}
+
+// "männlich" / "weiblich"; null, empty and any other value count as unknown.
+export function getGenderKey(caseItem) {
+  const gender = firstOf(caseItem?.perpetrators)?.gender;
+  const key = typeof gender === "string" ? gender.trim().toLowerCase() : "";
+  return key === "männlich" || key === "weiblich" ? key : "unbekannt";
+}
+
+export function isAttempt(caseItem) {
+  return caseItem?.attempt === true;
+}
+
+export const KNOWN_TYPES = ["Intim", "Familiär", "Nicht intim"];
+
+// Known types in their usual order, further types from the data alphabetically.
+export function sortTypes(types) {
+  const rank = (type) => (KNOWN_TYPES.includes(type) ? KNOWN_TYPES.indexOf(type) : KNOWN_TYPES.length);
+  return [...types].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b, "de"));
+}
+
+export const GENDER_OPTIONS = [
+  ["männlich", "Männlich"],
+  ["weiblich", "Weiblich"],
+  ["unbekannt", "Unbekannt"],
+];
+
+export const ATTEMPT_OPTIONS = [
+  ["all", "Alle"],
+  ["no", "Vollendet"],
+  ["yes", "Versuch"],
+];
+
+export function genderOptionLabel(key) {
+  return GENDER_OPTIONS.find(([value]) => value === key)?.[1] ?? key;
+}
+
+export const ATTEMPT_CHIP_LABELS = { yes: "Nur Versuche", no: "Nur vollendete" };
+
+// One label per active facet, e.g. ["Intim", "Nur Versuche", "Täter*in: weiblich"].
+export function facetLabels({ types, attempt, gender }) {
+  const labels = [];
+  if (types.length > 0) {
+    labels.push(types.join(", "));
+  }
+  if (attempt !== "all") {
+    labels.push(attempt === "yes" ? "Nur Versuche" : "Nur vollendete Taten");
+  }
+  if (gender.length > 0) {
+    labels.push(`Täter*in: ${gender.map((key) => genderOptionLabel(key).toLowerCase()).join(", ")}`);
+  }
+  return labels;
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { STATE_CODES, STATES } from "./filterUtils";
+import { ATTEMPT_OPTIONS, STATE_CODES, STATES } from "./filterUtils";
 
 export function YearPresets({ bounds, from, to, onChange, className = "" }) {
   const firstYear = Math.floor(bounds.min / 12);
@@ -82,6 +82,45 @@ export function StateToggleGrid({ states, stateCounts, onToggle }) {
           </button>
         );
       })}
+    </div>
+  );
+}
+
+// Checkbox list like the Bundesland list, without search. `options` are [value, label] pairs.
+export function FacetChecklist({ options, selected, counts, onToggle }) {
+  return (
+    <div className="facet-checklist">
+      {options.map(([value, label]) => {
+        const count = counts[value] ?? 0;
+        return (
+          <label key={value} className={`state-check${count === 0 ? " is-zero" : ""}`}>
+            <input type="checkbox" checked={selected.includes(value)} onChange={() => onToggle(value)} />
+            <span>{label}</span>
+            <span className="state-count">{count}</span>
+          </label>
+        );
+      })}
+    </div>
+  );
+}
+
+// Segmented single choice "Alle / Vollendet / Versuch".
+export function AttemptSwitch({ value, counts, onChange, className = "" }) {
+  return (
+    <div className={`attempt-switch ${className}`} role="radiogroup" aria-label="Versuch">
+      {ATTEMPT_OPTIONS.map(([key, label]) => (
+        <button
+          key={key}
+          type="button"
+          role="radio"
+          aria-checked={value === key}
+          className={value === key ? "is-active" : undefined}
+          onClick={() => onChange(key)}
+        >
+          {label}
+          <em>{counts[key] ?? 0}</em>
+        </button>
+      ))}
     </div>
   );
 }

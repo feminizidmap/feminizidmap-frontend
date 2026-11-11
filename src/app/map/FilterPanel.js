@@ -1,11 +1,13 @@
 "use client";
 
-import { StateChecklist, YearPresets } from "./FilterControls";
+import { AttemptSwitch, FacetChecklist, StateChecklist, YearPresets } from "./FilterControls";
 import MonthRangeSlider from "./MonthRangeSlider";
-import { rangeLabel } from "./filterUtils";
+import { ATTEMPT_OPTIONS, GENDER_OPTIONS, rangeLabel } from "./filterUtils";
 
 export default function FilterPanel({ filters, onClose }) {
   const { bounds, from, to, monthCounts, onRangeChange, states, stateCounts, onToggleState } = filters;
+  const { typeOptions, types, typeCounts, onToggleType, attempt, attemptCounts, onAttemptChange } = filters;
+  const { gender, genderCounts, onToggleGender } = filters;
 
   return (
     <section className="filter-panel" aria-label="Filter">
@@ -29,15 +31,49 @@ export default function FilterPanel({ filters, onClose }) {
         <div className="filter-section">
           <div className="filter-section-header">
             <span className="filter-label">Bundesland</span>
-            <span className="filter-value">{states.length === 0 ? "Alle" : `${states.length} ausgewählt`}</span>
+            <span className="filter-value">{selectionLabel(states)}</span>
           </div>
           <StateChecklist states={states} stateCounts={stateCounts} onToggle={onToggleState} />
+        </div>
+
+        <div className="filter-section">
+          <div className="filter-section-header">
+            <span className="filter-label">Art des Femi(ni)zids</span>
+            <span className="filter-value">{selectionLabel(types)}</span>
+          </div>
+          <FacetChecklist
+            options={typeOptions.map((type) => [type, type])}
+            selected={types}
+            counts={typeCounts}
+            onToggle={onToggleType}
+          />
+        </div>
+
+        <div className="filter-section">
+          <div className="filter-section-header">
+            <span className="filter-label">Versuch</span>
+            <span className="filter-value">{ATTEMPT_OPTIONS.find(([key]) => key === attempt)[1]}</span>
+          </div>
+          <AttemptSwitch value={attempt} counts={attemptCounts} onChange={onAttemptChange} />
+        </div>
+
+        {/* "des*der Täter*in": we deliberately avoid the rarely used "Täters*in" */}
+        <div className="filter-section">
+          <div className="filter-section-header">
+            <span className="filter-label">Geschlecht des*der Täter*in</span>
+            <span className="filter-value">{selectionLabel(gender)}</span>
+          </div>
+          <FacetChecklist options={GENDER_OPTIONS} selected={gender} counts={genderCounts} onToggle={onToggleGender} />
         </div>
       </div>
 
       <FilterFooter filters={filters} />
     </section>
   );
+}
+
+function selectionLabel(selected) {
+  return selected.length === 0 ? "Alle" : `${selected.length} ausgewählt`;
 }
 
 function FilterFooter({ filters }) {

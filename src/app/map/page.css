@@ -442,6 +442,66 @@
   margin: 0 -0.25rem;
 }
 
+.facet-checklist {
+  margin: 0 -0.25rem;
+}
+
+/* Versuch: segmented single choice */
+.attempt-switch {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid #d9dee8;
+}
+
+.attempt-switch button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid #d9dee8;
+  background: #fff;
+  color: #1f2c43;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.attempt-switch button:first-child {
+  border-left: 0;
+}
+
+.attempt-switch button:hover {
+  background: #f6f8fb;
+}
+
+.attempt-switch button em {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 0.74rem;
+  color: #6c7788;
+  font-variant-numeric: tabular-nums;
+}
+
+.attempt-switch button.is-active {
+  background: #172033;
+  color: #fff;
+}
+
+.attempt-switch button.is-active em {
+  color: #c5cedd;
+}
+
+.attempt-switch button:focus-visible {
+  outline: 2px solid #a541b0;
+  outline-offset: -2px;
+}
+
+.attempt-switch.is-mobile button {
+  height: 44px;
+}
+
 .state-checklist-empty {
   margin: 0.4rem 0.25rem;
   font-size: 0.85rem;
