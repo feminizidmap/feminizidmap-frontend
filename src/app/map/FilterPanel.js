@@ -30,14 +30,6 @@ export default function FilterPanel({ filters, onClose }) {
 
         <div className="filter-section">
           <div className="filter-section-header">
-            <span className="filter-label">Bundesland</span>
-            <span className="filter-value">{selectionLabel(states)}</span>
-          </div>
-          <StateChecklist states={states} stateCounts={stateCounts} onToggle={onToggleState} />
-        </div>
-
-        <div className="filter-section">
-          <div className="filter-section-header">
             <span className="filter-label">Art des Femi(ni)zids</span>
             <span className="filter-value">{selectionLabel(types)}</span>
           </div>
@@ -64,6 +56,14 @@ export default function FilterPanel({ filters, onClose }) {
             <span className="filter-value">{selectionLabel(gender)}</span>
           </div>
           <FacetChecklist options={GENDER_OPTIONS} selected={gender} counts={genderCounts} onToggle={onToggleGender} />
+        </div>
+
+        <div className="filter-section">
+          <div className="filter-section-header">
+            <span className="filter-label">Bundesland</span>
+            <span className="filter-value">{selectionLabel(states)}</span>
+          </div>
+          <StateChecklist states={states} stateCounts={stateCounts} onToggle={onToggleState} />
         </div>
       </div>
 

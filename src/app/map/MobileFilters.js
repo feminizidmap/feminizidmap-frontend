@@ -112,14 +112,6 @@ export function MobileFilterSheet({ filters, open, onClose }) {
 
           <div className="mobile-filter-section">
             <div className="filter-section-header">
-              <span className="filter-label">Bundesland</span>
-              <span className="filter-value">{selectionLabel(states)}</span>
-            </div>
-            <StateToggleGrid states={states} stateCounts={stateCounts} onToggle={onToggleState} />
-          </div>
-
-          <div className="mobile-filter-section">
-            <div className="filter-section-header">
               <span className="filter-label">Art des Femi(ni)zids</span>
               <span className="filter-value">{selectionLabel(types)}</span>
             </div>
@@ -145,6 +137,14 @@ export function MobileFilterSheet({ filters, open, onClose }) {
               <span className="filter-value">{selectionLabel(gender)}</span>
             </div>
             <FacetToggleGrid options={GENDER_OPTIONS} selected={gender} counts={genderCounts} onToggle={onToggleGender} />
+          </div>
+
+          <div className="mobile-filter-section">
+            <div className="filter-section-header">
+              <span className="filter-label">Bundesland</span>
+              <span className="filter-value">{selectionLabel(states)}</span>
+            </div>
+            <StateToggleGrid states={states} stateCounts={stateCounts} onToggle={onToggleState} />
           </div>
         </div>
 
