@@ -9,6 +9,7 @@ import {
   dependantsText,
   first,
   formatDate,
+  genderLabel,
   judicialStatus,
   knownAge,
   perpetratorLabel,
@@ -218,6 +219,7 @@ export default function CaseDetails({ props, open, onOpenChange }) {
           title={perpetratorLabel(perpetrator)}
           rows={[
             ["Beziehung zum Opfer", relationship],
+            ["Geschlecht", genderLabel(perpetrator)],
             ["Alter", perpetratorAge && `${perpetratorAge} Jahre`],
             ["Beruf", withDetails(perpetrator.profession, perpetrator.profession_details)],
             ["Wohnort", clean(perpetrator.perpetrator_city)],

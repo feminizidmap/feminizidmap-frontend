@@ -1,4 +1,4 @@
-import { STATES, getStateCode } from "./map/filterUtils";
+import { STATES, genderOptionLabel, getStateCode, normalizeGender } from "./map/filterUtils";
 
 // API values carry trailing spaces ("Familiär ") and form hints ("Stichwaffen (bitte angeben)").
 export function clean(value) {
@@ -52,8 +52,15 @@ export function placeLabel(caseItem, separator) {
   return [city, showState ? state : null].filter(Boolean).join(separator);
 }
 
+const PERPETRATOR_LABELS = { männlich: "Täter", weiblich: "Täterin", unbekannt: "Täter*in" };
+
 export function perpetratorLabel(perpetrator) {
-  return perpetrator?.gender === "weiblich" ? "Täterin" : "Täter";
+  return PERPETRATOR_LABELS[normalizeGender(perpetrator?.gender)];
+}
+
+// "Männlich" / "Weiblich" / "Unbekannt"
+export function genderLabel(perpetrator) {
+  return genderOptionLabel(normalizeGender(perpetrator?.gender));
 }
 
 const JUDICIAL_STATUS = {

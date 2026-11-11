@@ -143,10 +143,13 @@ export function getTypeKey(caseItem) {
 }
 
 // "männlich" / "weiblich"; null, empty and any other value count as unknown.
-export function getGenderKey(caseItem) {
-  const gender = firstOf(caseItem?.perpetrators)?.gender;
+export function normalizeGender(gender) {
   const key = typeof gender === "string" ? gender.trim().toLowerCase() : "";
   return key === "männlich" || key === "weiblich" ? key : "unbekannt";
+}
+
+export function getGenderKey(caseItem) {
+  return normalizeGender(firstOf(caseItem?.perpetrators)?.gender);
 }
 
 export function isAttempt(caseItem) {
