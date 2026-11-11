@@ -9,6 +9,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import CaseList, { LIST_PAGE_SIZE } from "./CaseList";
 import FilterPanel from "./FilterPanel";
 import { FunnelIcon, ResetViewIcon } from "./MapIcons";
+import MobileCaseBar from "./MobileCaseBar";
 import { MobileFilterBar, MobileFilterSheet } from "./MobileFilters";
 import useMediaQuery from "./useMediaQuery";
 import { getCases } from "../../services/api";
@@ -110,8 +111,11 @@ export default function CasesMap({
   const [status, setStatus] = useState("loading");
   const mapContainer = useRef(null);
   const mobileBarRef = useRef(null);
-  const listPanelRef = useRef(null);
+  const caseBarRef = useRef(null);
+  const casePanelCloseRef = useRef(null);
   const isDesktop = useMediaQuery("(min-width: 992px)");
+  // read by the map's click handlers, which are registered once
+  const isDesktopRef = useRef(isDesktop);
   const map = useRef(null);
   const geojsonRef = useRef({ type: "FeatureCollection", features: [] });
   const casesByIdRef = useRef(new Map());
@@ -127,6 +131,8 @@ export default function CasesMap({
   const homeRef = useRef(null);
   const [atHome, setAtHome] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
+  // mobile: full-screen case panel over the map
+  const [casePanelOpen, setCasePanelOpen] = useState(false);
   const [mapLoaded, setMapLoaded] = useState(false);
   // null = full data range; otherwise [fromMonth, toMonth] (absolute month indices, inclusive)
   const [range, setRange] = useState(null);
@@ -429,6 +435,7 @@ export default function CasesMap({
             ids: new Set(selected.map((caseItem) => String(caseItem.uuid))),
           });
           setListLimit(LIST_PAGE_SIZE);
+          if (!isDesktopRef.current) setCasePanelOpen(true);
         } catch (error) {
           console.error("Error getting cluster leaves:", error);
         }
@@ -451,6 +458,7 @@ export default function CasesMap({
 
         setSelection({ cases: [selected], ids: new Set([String(selectedId)]) });
         setListLimit(LIST_PAGE_SIZE);
+        if (!isDesktopRef.current) setCasePanelOpen(true);
       });
 
       map.current.on("click", (e) => {
@@ -513,7 +521,7 @@ export default function CasesMap({
     if (!isDesktop) {
       mapInstance.setMaxBounds(MOBILE_MAX_BOUNDS);
       const top = mobileBarRef.current?.getBoundingClientRect().bottom ?? 64;
-      const bottom = listPanelRef.current?.offsetHeight ?? 0;
+      const bottom = caseBarRef.current?.offsetHeight ?? 68;
       const camera = mapInstance.cameraForBounds(GERMANY_BOUNDS, {
         padding: { top: top + 16, bottom: bottom + 16, left: 16, right: 16 },
       });
@@ -568,11 +576,26 @@ export default function CasesMap({
     const handleKey = (event) => {
       if (event.key !== "Escape" || sheetOpen) return;
       if (event.target.closest?.("input, textarea, select, [contenteditable]")) return;
+      // Mobile: Esc first closes the case panel and keeps the selection visible on the map.
+      if (casePanelOpen) {
+        setCasePanelOpen(false);
+        return;
+      }
       setSelection(null);
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [sheetOpen]);
+  }, [sheetOpen, casePanelOpen]);
+
+  useEffect(() => {
+    isDesktopRef.current = isDesktop;
+    if (isDesktop) setCasePanelOpen(false);
+  }, [isDesktop]);
+
+  useEffect(() => {
+    // preventScroll: the panel is still off-screen when it starts sliding in; focusing would scroll the layout
+    if (casePanelOpen) casePanelCloseRef.current?.focus({ preventScroll: true });
+  }, [casePanelOpen]);
 
   // Changing any filter clears the cluster selection and resets the list pagination.
   useEffect(() => {
@@ -692,8 +715,42 @@ export default function CasesMap({
         )}
       </div>
 
-      <aside className="cases-list-panel" ref={listPanelRef}>
-        <div className="sheet-grab" />
+      {isDesktop === false && (
+        <MobileCaseBar
+          ref={caseBarRef}
+          status={status}
+          filteredCount={filteredCases.length}
+          selectionCount={selection ? selection.cases.length : null}
+          summary={summary}
+          onOpenList={() => setCasePanelOpen(true)}
+          onClearSelection={() => setSelection(null)}
+        />
+      )}
+
+      {/* Desktop: list column. Mobile: full-screen case panel that slides up over the map. */}
+      <aside
+        className={`cases-list-panel${casePanelOpen ? " is-open" : ""}`}
+        {...(isDesktop === false && {
+          role: "dialog",
+          "aria-modal": true,
+          "aria-label": selection ? "Auswahl" : "Alle Fälle",
+          "aria-hidden": !casePanelOpen,
+        })}
+      >
+        {isDesktop === false && (
+          <header className="case-panel-header">
+            <h2>{selection ? "Auswahl" : "Alle Fälle"}</h2>
+            <button
+              ref={casePanelCloseRef}
+              type="button"
+              className="case-panel-close"
+              aria-label="Schliessen, zurück zur Karte"
+              onClick={() => setCasePanelOpen(false)}
+            >
+              ×
+            </button>
+          </header>
+        )}
         <CaseList
           status={status}
           filteredCases={filteredCases}
@@ -708,6 +765,13 @@ export default function CasesMap({
           onClearSelection={() => setSelection(null)}
           onReset={resetFilters}
         />
+        {isDesktop === false && (
+          <footer className="case-panel-footer">
+            <button type="button" className="case-panel-back" onClick={() => setCasePanelOpen(false)}>
+              Zurück zur Karte
+            </button>
+          </footer>
+        )}
       </aside>
 
       {isDesktop === false && bounds && (
