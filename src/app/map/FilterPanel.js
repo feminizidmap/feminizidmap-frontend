@@ -2,7 +2,7 @@
 
 import { AttemptSwitch, FacetChecklist, StateChecklist, YearPresets } from "./FilterControls";
 import MonthRangeSlider from "./MonthRangeSlider";
-import { ATTEMPT_OPTIONS, GENDER_OPTIONS, rangeLabel } from "./filterUtils";
+import { ATTEMPT_OPTIONS, GENDER_OPTIONS, rangeLabel, selectionLabel } from "./filterUtils";
 
 export default function FilterPanel({ filters, onClose }) {
   const { bounds, from, to, monthCounts, onRangeChange, states, stateCounts, onToggleState } = filters;
@@ -70,10 +70,6 @@ export default function FilterPanel({ filters, onClose }) {
       <FilterFooter filters={filters} />
     </section>
   );
-}
-
-function selectionLabel(selected) {
-  return selected.length === 0 ? "Alle" : `${selected.length} ausgewählt`;
 }
 
 function FilterFooter({ filters }) {

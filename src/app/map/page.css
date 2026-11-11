@@ -755,6 +755,52 @@
   color: #c5cedd;
 }
 
+.facet-toggle-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.facet-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  min-height: 52px;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid #d9dee8;
+  background: #fff;
+  color: #1f2c43;
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.facet-toggle em {
+  font-style: normal;
+  font-weight: 500;
+  font-size: 0.78rem;
+  color: #6c7788;
+  font-variant-numeric: tabular-nums;
+}
+
+.facet-toggle.is-zero {
+  color: #a3abb8;
+}
+
+.facet-toggle.is-active {
+  background: #172033;
+  border-color: #172033;
+  color: #fff;
+}
+
+.facet-toggle.is-active em {
+  color: #c5cedd;
+}
+
 .mobile-filter-sheet-footer {
   display: flex;
   align-items: center;

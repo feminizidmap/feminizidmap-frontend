@@ -124,3 +124,22 @@ export function AttemptSwitch({ value, counts, onChange, className = "" }) {
     </div>
   );
 }
+
+// Mobile: 3-column toggle buttons, label on top and count below.
+export function FacetToggleGrid({ options, selected, counts, onToggle }) {
+  return (
+    <div className="facet-toggle-grid">
+      {options.map(([value, label]) => {
+        const count = counts[value] ?? 0;
+        const active = selected.includes(value);
+        const classes = ["facet-toggle", active && "is-active", count === 0 && "is-zero"].filter(Boolean).join(" ");
+        return (
+          <button key={value} type="button" className={classes} aria-pressed={active} onClick={() => onToggle(value)}>
+            <span>{label}</span>
+            <em>{count}</em>
+          </button>
+        );
+      })}
+    </div>
+  );
+}

@@ -120,6 +120,11 @@ export function rangeLabel(from, to, bounds) {
   return from === to ? monthLabel(from) : `${monthLabel(from)} – ${monthLabel(to)}`;
 }
 
+// Value shown next to a multi-select section heading.
+export function selectionLabel(selected) {
+  return selected.length === 0 ? "Alle" : `${selected.length} ausgewählt`;
+}
+
 export function statesLabel(states) {
   if (states.length === 0) {
     return "Alle Bundesländer";

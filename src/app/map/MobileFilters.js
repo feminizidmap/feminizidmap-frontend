@@ -1,13 +1,32 @@
 "use client";
 
 import { forwardRef, useEffect } from "react";
-import { StateToggleGrid, YearPresets } from "./FilterControls";
+import { AttemptSwitch, FacetToggleGrid, StateToggleGrid, YearPresets } from "./FilterControls";
 import { FunnelIcon } from "./MapIcons";
 import MonthRangeSlider from "./MonthRangeSlider";
-import { STATES, isFullRange, rangeLabel } from "./filterUtils";
+import {
+  ATTEMPT_CHIP_LABELS,
+  ATTEMPT_OPTIONS,
+  GENDER_OPTIONS,
+  STATES,
+  genderOptionLabel,
+  isFullRange,
+  rangeLabel,
+  selectionLabel,
+} from "./filterUtils";
+
+function FilterChip({ label, onRemove }) {
+  return (
+    <button type="button" className="mobile-filter-chip" aria-label={`${label} entfernen`} onClick={onRemove}>
+      {label}
+      <span aria-hidden="true">×</span>
+    </button>
+  );
+}
 
 export const MobileFilterBar = forwardRef(function MobileFilterBar({ filters, onOpen }, ref) {
   const { bounds, from, to, states, activeCount, onRangeChange, onToggleState } = filters;
+  const { types, onToggleType, attempt, onAttemptChange, gender, onToggleGender } = filters;
   const fullRange = isFullRange(from, to, bounds);
 
   return (
@@ -25,27 +44,23 @@ export const MobileFilterBar = forwardRef(function MobileFilterBar({ filters, on
       ) : (
         <>
           {!fullRange && (
-            <button
-              type="button"
-              className="mobile-filter-chip"
-              aria-label={`Zeitraum ${rangeLabel(from, to, bounds)} entfernen`}
-              onClick={() => onRangeChange(bounds.min, bounds.max)}
-            >
-              {rangeLabel(from, to, bounds)}
-              <span aria-hidden="true">×</span>
-            </button>
+            <FilterChip label={rangeLabel(from, to, bounds)} onRemove={() => onRangeChange(bounds.min, bounds.max)} />
           )}
           {states.map((code) => (
-            <button
-              key={code}
-              type="button"
-              className="mobile-filter-chip"
-              aria-label={`${STATES[code]} entfernen`}
-              onClick={() => onToggleState(code)}
-            >
-              {STATES[code]}
-              <span aria-hidden="true">×</span>
-            </button>
+            <FilterChip key={code} label={STATES[code]} onRemove={() => onToggleState(code)} />
+          ))}
+          {types.map((type) => (
+            <FilterChip key={type} label={type} onRemove={() => onToggleType(type)} />
+          ))}
+          {attempt !== "all" && (
+            <FilterChip label={ATTEMPT_CHIP_LABELS[attempt]} onRemove={() => onAttemptChange("all")} />
+          )}
+          {gender.map((key) => (
+            <FilterChip
+              key={key}
+              label={`Täter*in: ${genderOptionLabel(key).toLowerCase()}`}
+              onRemove={() => onToggleGender(key)}
+            />
           ))}
         </>
       )}
@@ -55,7 +70,8 @@ export const MobileFilterBar = forwardRef(function MobileFilterBar({ filters, on
 
 export function MobileFilterSheet({ filters, open, onClose }) {
   const { bounds, from, to, monthCounts, onRangeChange, states, stateCounts, onToggleState } = filters;
-  const { activeCount, filteredCount, onReset } = filters;
+  const { typeOptions, types, typeCounts, onToggleType, attempt, attemptCounts, onAttemptChange } = filters;
+  const { gender, genderCounts, onToggleGender, activeCount, filteredCount, onReset } = filters;
 
   useEffect(() => {
     if (!open) return undefined;
@@ -97,9 +113,38 @@ export function MobileFilterSheet({ filters, open, onClose }) {
           <div className="mobile-filter-section">
             <div className="filter-section-header">
               <span className="filter-label">Bundesland</span>
-              <span className="filter-value">{states.length === 0 ? "Alle" : `${states.length} ausgewählt`}</span>
+              <span className="filter-value">{selectionLabel(states)}</span>
             </div>
             <StateToggleGrid states={states} stateCounts={stateCounts} onToggle={onToggleState} />
+          </div>
+
+          <div className="mobile-filter-section">
+            <div className="filter-section-header">
+              <span className="filter-label">Art des Femi(ni)zids</span>
+              <span className="filter-value">{selectionLabel(types)}</span>
+            </div>
+            <FacetToggleGrid
+              options={typeOptions.map((type) => [type, type])}
+              selected={types}
+              counts={typeCounts}
+              onToggle={onToggleType}
+            />
+          </div>
+
+          <div className="mobile-filter-section">
+            <div className="filter-section-header">
+              <span className="filter-label">Versuch</span>
+              <span className="filter-value">{ATTEMPT_OPTIONS.find(([key]) => key === attempt)[1]}</span>
+            </div>
+            <AttemptSwitch value={attempt} counts={attemptCounts} onChange={onAttemptChange} className="is-mobile" />
+          </div>
+
+          <div className="mobile-filter-section">
+            <div className="filter-section-header">
+              <span className="filter-label">Geschlecht des*der Täter*in</span>
+              <span className="filter-value">{selectionLabel(gender)}</span>
+            </div>
+            <FacetToggleGrid options={GENDER_OPTIONS} selected={gender} counts={genderCounts} onToggle={onToggleGender} />
           </div>
         </div>
 
