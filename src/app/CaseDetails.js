@@ -10,7 +10,6 @@ import {
   first,
   formatDate,
   genderLabel,
-  judicialStatus,
   knownAge,
   perpetratorLabel,
   placeLabel,
@@ -102,7 +101,7 @@ export default function CaseDetails({ props, open, onOpenChange }) {
   };
 
   const bodyId = useId();
-  const toggleLabel = isOpen ? "Details ausblenden" : "Alle Details anzeigen";
+  const toggleLabel = isOpen ? "Details ausblenden" : "Alle Details";
 
   // Chevron and footer buttons toggle; so does a click on the head, unless the user is selecting text.
   const handleToggleClick = (event) => {
@@ -124,7 +123,6 @@ export default function CaseDetails({ props, open, onOpenChange }) {
   const perpetratorAge = knownAge(perpetrator.age);
   const relationship = withDetails(victim.relationship_perpetrator, victim.relationship_perpetrator_details);
   const causeOfDeath = clean(crime.cause_of_death);
-  const status = judicialStatus(perpetrator.judical_status);
   const sentence = clean(perpetrator.sentence);
   const suicide = clean(perpetrator.committed_suicide);
   const mediaLabels = cleanList(props.media_labels);
@@ -179,28 +177,7 @@ export default function CaseDetails({ props, open, onOpenChange }) {
           </div>
         )}
 
-        {(relationship || perpetratorAge || causeOfDeath) && (
-          <p className="case-card-summary">
-            {(relationship || perpetratorAge) && (
-              <>
-                {perpetratorLabel(perpetrator)}: {relationship && <b>{relationship}</b>}
-                {relationship && perpetratorAge && ", "}
-                {perpetratorAge && `${perpetratorAge} J.`}
-              </>
-            )}
-            {(relationship || perpetratorAge) && causeOfDeath && " · "}
-            {causeOfDeath}
-          </p>
-        )}
-
-        <p className="case-card-status">
-          <i style={{ background: status.color }} />
-          <span>
-            <b>{status.label}</b>
-            {sentence && sentence !== "Entfällt" && ` · ${sentence}`}
-          </span>
-        </p>
-
+        {causeOfDeath && <p className="case-card-summary">{causeOfDeath}</p>}
       </div>
 
       <div className="case-card-body" id={bodyId} hidden={!isOpen}>
