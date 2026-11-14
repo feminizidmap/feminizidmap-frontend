@@ -862,36 +862,6 @@
     transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
-  .case-panel-header {
-    display: flex;
-    flex: none;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 1rem 8px;
-    background: #fff;
-    border-bottom: 4px solid #000;
-  }
-
-  .case-panel-header h2 {
-    margin: 0;
-    font-size: 1.6rem;
-    font-weight: 800;
-    letter-spacing: -0.01em;
-    color: #000;
-  }
-
-  .case-panel-close {
-    width: 44px;
-    height: 44px;
-    margin-right: -10px;
-    padding: 0;
-    border: 0;
-    background: none;
-    color: #000;
-    font-size: 1.8rem;
-    line-height: 1;
-  }
-
   .cases-list-panel > .cases-list-header {
     flex-wrap: wrap;
     padding: 1rem 1rem 0;

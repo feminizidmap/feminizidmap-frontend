@@ -760,20 +760,6 @@ export default function CasesMap({
           "aria-hidden": !casePanelOpen,
         })}
       >
-        {isDesktop === false && (
-          <header className="case-panel-header">
-            <h2>{selection ? "Auswahl" : "Alle Fälle"}</h2>
-            <button
-              ref={casePanelCloseRef}
-              type="button"
-              className="case-panel-close"
-              aria-label="Schliessen, zurück zur Karte"
-              onClick={() => setCasePanelOpen(false)}
-            >
-              ×
-            </button>
-          </header>
-        )}
         <CaseList
           status={status}
           filteredCases={filteredCases}
@@ -789,7 +775,12 @@ export default function CasesMap({
         />
         {isDesktop === false && (
           <footer className="case-panel-footer">
-            <button type="button" className="case-panel-back" onClick={() => setCasePanelOpen(false)}>
+            <button
+              ref={casePanelCloseRef}
+              type="button"
+              className="case-panel-back"
+              onClick={() => setCasePanelOpen(false)}
+            >
               Zurück zur Karte
             </button>
           </footer>
