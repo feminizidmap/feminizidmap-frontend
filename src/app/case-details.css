@@ -1,0 +1,319 @@
+.case-card {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 0.6rem;
+  padding: 0;
+  border: 2px solid #000;
+  background: #fff;
+  box-shadow: none;
+  transition: background-color 0.15s;
+}
+
+.case-card:hover {
+  background: #fafafa;
+}
+
+/* Left bar as a pseudo-element so the footer strip background doesn't cover it */
+.case-card.is-open::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  width: 4px;
+  background: rgb(181, 35, 243);
+}
+
+.case-card-head {
+  position: relative;
+  padding: 0.85rem 1rem 0.8rem 1rem;
+  cursor: pointer;
+}
+
+.case-card-body {
+  padding: 0 1rem 0.2rem;
+}
+
+.case-card-body[hidden] {
+  display: none;
+}
+
+.case-card.is-always-open .case-card-meta,
+.case-card.is-always-open .case-card-name {
+  padding-right: 0;
+}
+
+.case-card.is-always-open .case-card-head {
+  cursor: default;
+}
+
+.case-card.is-always-open .case-card-body {
+  padding-bottom: 0.85rem;
+}
+
+/* Toggle 1: chevron, always in the same place top-right */
+.case-card-chevron {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 2px solid #000;
+  background: #fff;
+  color: #000;
+  transition: background 0.15s, color 0.15s;
+}
+
+.case-card-head:hover .case-card-chevron,
+.case-card-chevron:hover {
+  background: #000;
+  color: #fff;
+}
+
+.case-card.is-open .case-card-chevron {
+  background: rgb(181, 35, 243);
+  border-color: rgb(181, 35, 243);
+  color: #fff;
+}
+
+/* Toggle 2: full-width footer strip */
+.case-card-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  height: 40px;
+  border: 0;
+  border-top: 1px solid #000;
+  background: #f5f5f5;
+  color: #000;
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition: background 0.15s;
+}
+
+.case-card-toggle:hover {
+  background: #ececec;
+}
+
+.case-card-chevron svg,
+.case-card-toggle svg {
+  transition: transform 0.2s;
+}
+
+.case-card.is-open .case-card-chevron svg,
+.case-card.is-open .case-card-toggle svg {
+  transform: rotate(180deg);
+}
+
+.case-card-chevron:focus-visible,
+.case-card-toggle:focus-visible {
+  outline: 2px solid rgb(181, 35, 243);
+  outline-offset: 2px;
+}
+
+.case-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.5rem;
+  margin-bottom: 0.3rem;
+  padding-right: 2.3rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.case-card-meta b {
+  color: #000;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.case-card-flag {
+  padding: 0.15rem 0.45rem;
+  background: #fff1d9;
+  color: #865300;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.case-card-name {
+  margin: 0;
+  padding-right: 2.3rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  color: #000;
+}
+
+.case-card-name span {
+  font-weight: 500;
+  color: #555;
+}
+
+.case-card-summary {
+  margin: 0 0 0.55rem;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: #000;
+}
+
+.case-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.case-card-tag {
+  padding: 0.1rem 0.4rem;
+  border: 2px solid #000;
+  background: #fff;
+  color: #000;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.case-card-tag.is-type {
+  border-color: rgb(181, 35, 243);
+  color: rgb(181, 35, 243);
+}
+
+.case-card-status {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #000;
+}
+
+.case-card-status i {
+  flex: none;
+  align-self: center;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.case-card-status b {
+  color: #000;
+  font-weight: 700;
+}
+
+.case-details-section {
+  padding: 0.7rem 0;
+  border-top: 1px solid #000;
+}
+
+.case-details-label {
+  display: block;
+  margin: 0 0 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #000;
+}
+
+.case-details-list {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr;
+  gap: 0.3rem 0.8rem;
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.case-details-row {
+  display: contents;
+}
+
+.case-details-list dt {
+  color: #555;
+  font-weight: 600;
+}
+
+.case-details-list dd {
+  min-width: 0;
+  margin: 0;
+  color: #000;
+}
+
+.case-details-note {
+  margin: 0.55rem 0 0;
+  padding: 0.5rem 0.7rem;
+  border-left: 4px solid rgb(181, 35, 243);
+  background: #f8eefd;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: #000;
+}
+
+.case-details-muted {
+  color: #777;
+}
+
+.case-details-hint {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.85rem;
+  color: #777;
+}
+
+.case-risk-factors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.case-risk-factors span {
+  padding: 0.1rem 0.45rem;
+  border: 2px solid #000;
+  color: #000;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.case-risk-factors span.is-yes {
+  border-color: rgb(181, 35, 243);
+  background: #f8eefd;
+  color: rgb(181, 35, 243);
+  font-weight: 700;
+}
+
+.case-risk-factors em {
+  margin-left: 0.25rem;
+  font-style: normal;
+  opacity: 0.75;
+}
+
+.case-details-id {
+  margin: 0.35rem 0 0;
+  padding-top: 0.6rem;
+  border-top: 1px solid #000;
+  font: 0.8rem/1.4 ui-monospace, Menlo, monospace;
+  color: #777;
+}
+
+@media (max-width: 400px) {
+  .case-details-list {
+    grid-template-columns: 1fr;
+    gap: 0.1rem;
+  }
+
+  .case-details-list dd {
+    margin-bottom: 0.35rem;
+  }
+}
