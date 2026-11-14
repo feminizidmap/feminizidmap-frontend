@@ -8,9 +8,9 @@ import { layers, namedFlavor } from "@protomaps/basemaps";
 import "maplibre-gl/dist/maplibre-gl.css";
 import CaseList, { LIST_PAGE_SIZE } from "./CaseList";
 import FilterPanel from "./FilterPanel";
-import { FunnelIcon, ResetViewIcon } from "./MapIcons";
+import { ResetViewIcon } from "./MapIcons";
 import MobileCaseBar from "./MobileCaseBar";
-import { MobileFilterBar, MobileFilterSheet } from "./MobileFilters";
+import { FilterChipBar, MobileFilterSheet } from "./MobileFilters";
 import useMediaQuery from "./useMediaQuery";
 import { getCases } from "../../services/api";
 import {
@@ -54,7 +54,7 @@ const MOBILE_MAX_BOUNDS = [[-4.0, 36.0], [24.0, 62.0]];
 
 // Points with an open case, and clusters containing at least one, are drawn in ink and on top.
 const HAS_OPEN_CASE = ["any", ["==", ["get", "hasOpen"], true], ["==", ["get", "open"], true]];
-const MARKER_COLOR = ["case", HAS_OPEN_CASE, "#172033", "#A541B0"];
+const MARKER_COLOR = ["case", HAS_OPEN_CASE, "#000000", "#B523F3"];
 const MARKER_SORT_KEY = ["case", HAS_OPEN_CASE, 1, 0];
 
 // Any marker containing a selected case gets the ring, so the selection survives re-clustering on zoom.
@@ -110,7 +110,6 @@ export default function CasesMap({
   const [cases, setCases] = useState([]);
   const [status, setStatus] = useState("loading");
   const mapContainer = useRef(null);
-  const mobileBarRef = useRef(null);
   const caseBarRef = useRef(null);
   const casePanelCloseRef = useRef(null);
   const isDesktop = useMediaQuery("(min-width: 992px)");
@@ -352,9 +351,9 @@ export default function CasesMap({
         filter: HAS_SELECTED_CASE,
         paint: {
           "circle-color": "#ffffff",
-          "circle-radius": ["case", ["has", "point_count"], ["step", ["get", "point_count"], 17, 10, 23, 20, 29, 50, 35], 9],
-          "circle-stroke-width": 2,
-          "circle-stroke-color": "#172033",
+          "circle-radius": ["case", ["has", "point_count"], ["step", ["get", "point_count"], 19, 10, 25, 20, 31, 50, 38], 10],
+          "circle-stroke-width": 3,
+          "circle-stroke-color": "#000000",
         },
       });
 
@@ -368,7 +367,7 @@ export default function CasesMap({
         },
         paint: {
           "circle-color": MARKER_COLOR,
-          "circle-radius": ["step", ["get", "point_count"], 14, 10, 20, 20, 26, 50, 32],
+          "circle-radius": ["step", ["get", "point_count"], 16, 10, 22, 20, 28, 50, 36],
           "circle-opacity": 1
         },
       });
@@ -381,7 +380,7 @@ export default function CasesMap({
         layout: {
           "text-field": "{point_count_abbreviated}",
           "text-font": ["Noto Sans Medium"],
-          "text-size": ["step", ["get", "point_count"], 12, 10, 14, 20, 16, 50, 18],
+          "text-size": ["step", ["get", "point_count"], 13, 10, 15, 20, 17, 50, 19],
           "text-allow-overlap": true,
           "text-ignore-placement": true,
         },
@@ -400,9 +399,9 @@ export default function CasesMap({
         },
         paint: {
           "circle-color": MARKER_COLOR,
-          "circle-radius": 6,
-          "circle-stroke-width": 1,
-          "circle-stroke-color": "transparent",
+          "circle-radius": 7,
+          "circle-stroke-width": 1.5,
+          "circle-stroke-color": "#ffffff",
         },
       });
 
@@ -520,10 +519,9 @@ export default function CasesMap({
 
     if (!isDesktop) {
       mapInstance.setMaxBounds(MOBILE_MAX_BOUNDS);
-      const top = mobileBarRef.current?.getBoundingClientRect().bottom ?? 64;
       const bottom = caseBarRef.current?.offsetHeight ?? 68;
       const camera = mapInstance.cameraForBounds(GERMANY_BOUNDS, {
-        padding: { top: top + 16, bottom: bottom + 16, left: 16, right: 16 },
+        padding: { top: 16, bottom: bottom + 16, left: 16, right: 16 },
       });
       jumpHome(mapInstance, { center: camera.center, zoom: camera.zoom });
       return undefined;
@@ -647,8 +645,6 @@ export default function CasesMap({
     });
   }, []);
 
-  const collapseAllCases = useCallback(() => setOpenCaseIds(new Set()), []);
-
   const closeSheet = useCallback(() => setSheetOpen(false), []);
 
   const filters = {
@@ -682,36 +678,23 @@ export default function CasesMap({
         <div ref={mapContainer} className="cases-map-canvas" />
         {actionsEl &&
           createPortal(
-            <>
-              <button
-                type="button"
-                className={`map-action${filterOpen ? " is-active" : ""}`}
-                title="Filter"
-                aria-label="Filter"
-                aria-expanded={filterOpen}
-                onClick={() => setFilterOpen((open) => !open)}
-              >
-                <FunnelIcon />
-                {activeCount > 0 && <span className="filter-badge">{activeCount}</span>}
-              </button>
-              <button
-                type="button"
-                className="map-action"
-                title="Kartenansicht zurücksetzen"
-                aria-label="Kartenansicht zurücksetzen"
-                disabled={atHome}
-                onClick={resetView}
-              >
-                <ResetViewIcon />
-              </button>
-            </>,
+            <button
+              type="button"
+              className="map-action"
+              title="Kartenansicht zurücksetzen"
+              aria-label="Kartenansicht zurücksetzen"
+              disabled={atHome}
+              onClick={resetView}
+            >
+              <ResetViewIcon />
+            </button>,
             actionsEl
           )}
         {isDesktop && filterOpen && bounds && (
           <FilterPanel filters={filters} onClose={() => setFilterOpen(false)} />
         )}
-        {isDesktop === false && bounds && (
-          <MobileFilterBar ref={mobileBarRef} filters={filters} onOpen={() => setSheetOpen(true)} />
+        {isDesktop && bounds && (
+          <FilterChipBar filters={filters} onOpen={() => setFilterOpen((open) => !open)} />
         )}
       </div>
 
@@ -755,15 +738,14 @@ export default function CasesMap({
           status={status}
           filteredCases={filteredCases}
           selection={selection?.cases ?? null}
-          activeCount={activeCount}
-          summary={summary}
           limit={listLimit}
           openCaseIds={openCaseIds}
           onToggleCase={toggleOpenCase}
-          onCollapseAll={collapseAllCases}
           onMore={() => setListLimit((limit) => limit + LIST_PAGE_SIZE)}
-          onClearSelection={() => setSelection(null)}
           onReset={resetFilters}
+          onOpenFilters={isDesktop ? undefined : () => setSheetOpen(true)}
+          filterOpen={sheetOpen}
+          activeCount={activeCount}
         />
         {isDesktop === false && (
           <footer className="case-panel-footer">

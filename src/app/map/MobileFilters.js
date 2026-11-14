@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useEffect } from "react";
+import { useEffect } from "react";
 import { AttemptSwitch, FacetToggleGrid, StateToggleGrid, YearPresets } from "./FilterControls";
 import { FunnelIcon } from "./MapIcons";
 import MonthRangeSlider from "./MonthRangeSlider";
@@ -17,28 +17,29 @@ import {
 
 function FilterChip({ label, onRemove }) {
   return (
-    <button type="button" className="mobile-filter-chip" aria-label={`${label} entfernen`} onClick={onRemove}>
+    <button type="button" className="filter-chip" aria-label={`${label} entfernen`} onClick={onRemove}>
       {label}
       <span aria-hidden="true">×</span>
     </button>
   );
 }
 
-export const MobileFilterBar = forwardRef(function MobileFilterBar({ filters, onOpen }, ref) {
+// Bar of active-filter chips over the map; desktop shows it at the top, mobile opens filters from the case list instead.
+export function FilterChipBar({ filters, onOpen }) {
   const { bounds, from, to, states, activeCount, onRangeChange, onToggleState } = filters;
   const { types, onToggleType, attempt, onAttemptChange, gender, onToggleGender } = filters;
   const fullRange = isFullRange(from, to, bounds);
 
   return (
-    <div className="mobile-filter-bar" ref={ref}>
-      <button type="button" className="mobile-filter-button" onClick={onOpen}>
+    <div className="filter-chip-bar">
+      <button type="button" className="filter-chip-bar-button" onClick={onOpen}>
         <FunnelIcon size={18} />
         Filter
         {activeCount > 0 && <span className="filter-badge">{activeCount}</span>}
       </button>
 
       {activeCount === 0 ? (
-        <button type="button" className="mobile-filter-chip" onClick={onOpen}>
+        <button type="button" className="filter-chip" onClick={onOpen}>
           Alle Jahre · Alle Bundesländer
         </button>
       ) : (
@@ -66,7 +67,7 @@ export const MobileFilterBar = forwardRef(function MobileFilterBar({ filters, on
       )}
     </div>
   );
-});
+}
 
 export function MobileFilterSheet({ filters, open, onClose }) {
   const { bounds, from, to, monthCounts, onRangeChange, states, stateCounts, onToggleState } = filters;
