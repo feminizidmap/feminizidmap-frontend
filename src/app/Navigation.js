@@ -22,7 +22,6 @@ export default function Navigation() {
             <Link onClick={() => setExpanded(false)} className="nav-link fs-2" href="/">HOME</Link>
             <Link onClick={() => setExpanded(false)} className="nav-link fs-2" href="/about">ABOUT</Link>
             <Link onClick={() => setExpanded(false)} className="nav-link fs-2" href="/map">MAP</Link>
-            <Link onClick={() => setExpanded(false)} className="nav-link fs-2" href="/database">DATABASE</Link>
             <Link onClick={() => setExpanded(false)} className="nav-link fs-2" href="/reports">REPORTS</Link>
             <Link onClick={() => setExpanded(false)} className="nav-link fs-2" href="/">TEAM</Link>
             <Link onClick={() => setExpanded(false)} className="nav-link fs-2" href="/">FAQ</Link>
