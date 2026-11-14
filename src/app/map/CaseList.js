@@ -57,7 +57,6 @@ export default function CaseList({
         </div>
       )}
 
-      {status === "loading" && <p className="cases-list-loading">Fälle werden geladen…</p>}
       {status === "error" && <p className="cases-list-empty">Fälle konnten nicht geladen werden.</p>}
       {status === "ready" && visibleCases.length === 0 && (
         <p className="cases-list-empty">
