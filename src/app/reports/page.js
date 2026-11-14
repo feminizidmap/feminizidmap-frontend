@@ -1,6 +1,7 @@
 import Link from "next/link";
+import "./reports.css";
 import { getReports } from "../../services/api";
-import { formatDate } from "../caseFormat";
+import { formatDate, teaser } from "../caseFormat";
 
 export default async function Page() {
   let reports = [];
@@ -16,13 +17,16 @@ export default async function Page() {
     {reports.length === 0 ? (
       <p className="fs-3">No reports available yet.</p>
     ) : (
-      <ul className="list-unstyled">
+      <ul className="list-unstyled report-list">
         {reports.map((report) => (
-          <li key={report.documentId} className="mb-4">
-            <Link href={`/reports/${report.documentId}`} className="purple fs-3 fw-bold text-decoration-none">
+          <li key={report.documentId} className="report-card">
+            <div className="report-meta">
+              <span className="report-date">{formatDate(report.date)}</span>
+            </div>
+            <Link href={`/reports/${report.documentId}`} className="purple fs-3 fw-bold text-decoration-none report-title">
               {report.title}
             </Link>
-            <p className="fs-5 mb-0">{formatDate(report.date)}</p>
+            {teaser(report.content) && <p className="fs-5 report-teaser">{teaser(report.content)}</p>}
           </li>
         ))}
       </ul>

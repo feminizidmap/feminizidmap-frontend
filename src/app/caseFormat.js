@@ -35,6 +35,22 @@ export function knownAge(value) {
   return Number.isFinite(age) && age > 0 ? age : null;
 }
 
+function blocksToText(node) {
+  if (!node) return "";
+  if (typeof node.text === "string") return node.text;
+  if (Array.isArray(node.children)) return node.children.map(blocksToText).join("");
+  if (Array.isArray(node)) return node.map(blocksToText).join(" ");
+  return "";
+}
+
+// First `wordCount` words of a Strapi blocks-format rich text field, for use as a teaser.
+export function teaser(content, wordCount = 100) {
+  const text = blocksToText(content).replace(/\s+/g, " ").trim();
+  if (!text) return null;
+  const words = text.split(" ");
+  return words.length <= wordCount ? text : `${words.slice(0, wordCount).join(" ")}…`;
+}
+
 export function formatDate(value) {
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value || "");
   return match ? `${match[3]}.${match[2]}.${match[1]}` : null;
