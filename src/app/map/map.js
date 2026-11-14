@@ -48,6 +48,8 @@ class PortalControl {
 
 const GERMANY_BOUNDS = [[5.87, 47.27], [15.04, 55.06]];
 const DESKTOP_HOME = { center: [10.5, 51.3], zoom: 5 };
+// How many zoom levels closer-in the map starts before easing out to home on first landing.
+const LANDING_ZOOM_OFFSET = 1;
 const DESKTOP_MAX_BOUNDS = [[2.0, 47.0], [18.0, 55.0]];
 // Looser on mobile so fitBounds can push Germany between top bar and list sheet.
 const MOBILE_MAX_BOUNDS = [[-4.0, 36.0], [24.0, 62.0]];
@@ -128,6 +130,7 @@ export default function CasesMap({
   const [actionsEl, setActionsEl] = useState(null);
   // initial camera ("home"); the reset button is disabled while the map is there
   const homeRef = useRef(null);
+  const hasPlayedLandingRef = useRef(false);
   const [atHome, setAtHome] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
   // mobile: full-screen case panel over the map
@@ -308,7 +311,8 @@ export default function CasesMap({
 
     map.current = new maplibregl.Map({
       container: mapContainer.current,
-      zoom: DESKTOP_HOME.zoom,
+      // starts a bit more zoomed in; jumpHome eases out to the real home view on landing
+      zoom: DESKTOP_HOME.zoom + LANDING_ZOOM_OFFSET,
       minZoom: 2,
       maxZoom: 12,
       center: DESKTOP_HOME.center,
@@ -528,9 +532,21 @@ export default function CasesMap({
   }, [geojsonData, mapLoaded]);
 
   // Max bounds may adjust the requested camera; store the camera the map actually ends up with as home.
+  // The very first time, ease in from slightly more zoomed in for a brief landing effect.
   const jumpHome = (mapInstance, camera) => {
-    mapInstance.jumpTo(camera);
-    homeRef.current = { center: mapInstance.getCenter().toArray(), zoom: mapInstance.getZoom() };
+    const recordHome = () => {
+      homeRef.current = { center: mapInstance.getCenter().toArray(), zoom: mapInstance.getZoom() };
+    };
+
+    if (hasPlayedLandingRef.current) {
+      mapInstance.jumpTo(camera);
+      recordHome();
+      return;
+    }
+
+    hasPlayedLandingRef.current = true;
+    mapInstance.easeTo({ ...camera, duration: 900 });
+    mapInstance.once("moveend", recordHome);
   };
 
   // Desktop: zoom + filter controls. Mobile: pinch only, Germany framed between top bar and list sheet.
