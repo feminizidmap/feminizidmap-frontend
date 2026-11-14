@@ -321,8 +321,31 @@ export default function CasesMap({
             url: `pmtiles://${pmtilesUrl}`,
             attribution: '© OpenStreetMap',
           },
+          "germany-outline": {
+            type: "geojson",
+            data: "/germany-outline.geojson",
+          },
         },
-        layers: layers("protomaps", namedFlavor("grayscale"), { lang: languageRef.current }),
+        layers: layers("protomaps", namedFlavor("white"), { lang: languageRef.current }).map((layer) => {
+          // Replace the generic (all-countries) boundary with just Germany's outline; keep Bundesland borders solid, drop Landkreis (and finer) borders entirely.
+          if (layer.id === "boundaries_country") {
+            return {
+              id: "boundaries_country",
+              type: "line",
+              source: "germany-outline",
+              paint: { "line-color": "#4d4d4d", "line-width": 1.1 },
+            };
+          }
+          if (layer.id === "boundaries") {
+            const { "line-dasharray": _dash, ...paint } = layer.paint;
+            return {
+              ...layer,
+              filter: ["all", [">", "kind_detail", 2], ["<", "kind_detail", 6]],
+              paint: { ...paint, "line-color": "#999999", "line-width": 0.6 },
+            };
+          }
+          return layer;
+        }),
       },
     });
 
