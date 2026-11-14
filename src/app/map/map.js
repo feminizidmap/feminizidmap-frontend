@@ -337,7 +337,7 @@ export default function CasesMap({
               id: "boundaries_country",
               type: "line",
               source: "germany-outline",
-              paint: { "line-color": "#4d4d4d", "line-width": 1.1 },
+              paint: { "line-color": "#808080", "line-width": 1.6 },
             };
           }
           if (layer.id === "boundaries") {
