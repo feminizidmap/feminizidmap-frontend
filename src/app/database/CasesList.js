@@ -26,7 +26,7 @@ export default function CasesList({ cases }) {
       </div>
       <div className="database-scroll">
         {sorted.map((caseItem) => (
-          <CaseDetails key={caseItem.uuid} props={caseItem} />
+          <CaseDetails key={caseItem.uuid} props={caseItem} alwaysOpen />
         ))}
       </div>
     </div>

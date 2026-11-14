@@ -39,6 +39,19 @@
   display: none;
 }
 
+.case-card.is-always-open .case-card-meta,
+.case-card.is-always-open .case-card-name {
+  padding-right: 0;
+}
+
+.case-card.is-always-open .case-card-head {
+  cursor: default;
+}
+
+.case-card.is-always-open .case-card-body {
+  padding-bottom: 0.85rem;
+}
+
 /* Toggle 1: chevron, always in the same place top-right */
 .case-card-chevron {
   position: absolute;

@@ -91,11 +91,13 @@ function joinWithDetails(values, details) {
 }
 
 // `open`/`onOpenChange` are optional; without them the card keeps its own open state.
-export default function CaseDetails({ props, open, onOpenChange }) {
+// `alwaysOpen` locks the card open and drops the toggle controls entirely (e.g. the database page, which has room to show everything at once).
+export default function CaseDetails({ props, open, onOpenChange, alwaysOpen = false }) {
   const [ownOpen, setOwnOpen] = useState(false);
   const controlled = open !== undefined;
-  const isOpen = controlled ? open : ownOpen;
+  const isOpen = alwaysOpen ? true : controlled ? open : ownOpen;
   const setOpen = (next) => {
+    if (alwaysOpen) return;
     if (!controlled) setOwnOpen(next);
     onOpenChange?.(next);
   };
@@ -139,19 +141,21 @@ export default function CaseDetails({ props, open, onOpenChange }) {
   ];
 
   return (
-    <article className={`case-card${isOpen ? " is-open" : ""}`}>
-      <div className="case-card-head" onClick={handleHeadClick}>
-        <button
-          type="button"
-          className="case-card-chevron"
-          aria-expanded={isOpen}
-          aria-controls={bodyId}
-          aria-label={toggleLabel}
-          title={toggleLabel}
-          onClick={handleToggleClick}
-        >
-          <ChevronIcon />
-        </button>
+    <article className={`case-card${isOpen ? " is-open" : ""}${alwaysOpen ? " is-always-open" : ""}`}>
+      <div className="case-card-head" onClick={alwaysOpen ? undefined : handleHeadClick}>
+        {!alwaysOpen && (
+          <button
+            type="button"
+            className="case-card-chevron"
+            aria-expanded={isOpen}
+            aria-controls={bodyId}
+            aria-label={toggleLabel}
+            title={toggleLabel}
+            onClick={handleToggleClick}
+          >
+            <ChevronIcon />
+          </button>
+        )}
 
         <div className="case-card-meta">
           {formatDate(props.crime_date) && <b>{formatDate(props.crime_date)}</b>}
@@ -243,16 +247,18 @@ export default function CaseDetails({ props, open, onOpenChange }) {
         {footer.length > 0 && <p className="case-details-id">{footer.join(" · ")}</p>}
       </div>
 
-      <button
-        type="button"
-        className="case-card-toggle"
-        aria-expanded={isOpen}
-        aria-controls={bodyId}
-        onClick={handleToggleClick}
-      >
-        <span>{toggleLabel}</span>
-        <ChevronIcon />
-      </button>
+      {!alwaysOpen && (
+        <button
+          type="button"
+          className="case-card-toggle"
+          aria-expanded={isOpen}
+          aria-controls={bodyId}
+          onClick={handleToggleClick}
+        >
+          <span>{toggleLabel}</span>
+          <ChevronIcon />
+        </button>
+      )}
     </article>
   );
 }
