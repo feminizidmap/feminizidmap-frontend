@@ -16,3 +16,18 @@
 .navbar-toggler {
   border: none;
 }
+
+.site-shell {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+.site-shell.site-shell-fixed {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.site-content {
+  min-height: 0;
+}

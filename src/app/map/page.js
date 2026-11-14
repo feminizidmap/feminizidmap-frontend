@@ -3,7 +3,7 @@ import "./page.css";
 
 export default function Page() {
   return (
-    <main>
+    <main className="map-page-main">
       <Map />
     </main>
   );

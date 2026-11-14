@@ -1,13 +1,23 @@
+.map-page-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
 .cases-map-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.9fr) minmax(320px, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: 1rem;
   align-items: stretch;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .cases-map-shell {
   position: relative;
-  height: 100vh;
+  height: 100%;
   overflow: hidden;
   border: none;
   box-shadow: none;
@@ -20,7 +30,7 @@
 }
 
 .cases-list-panel {
-  height: 100vh;
+  height: 100%;
   border: none;
   background: #ffffff;
   box-shadow: none;
@@ -833,8 +843,6 @@
   .cases-map-layout {
     position: relative;
     display: block;
-    height: 100vh;
-    height: 100dvh;
     overflow: hidden;
   }
 
