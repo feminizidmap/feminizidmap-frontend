@@ -715,7 +715,11 @@ export default function CasesMap({
     <div className="cases-map-layout">
       <div className="cases-map-shell">
         <div ref={mapContainer} className="cases-map-canvas" />
-        {status === "loading" && <p className="cases-map-loading">Fälle werden geladen…</p>}
+        {!mapLoaded && (
+          <div className="cases-map-basemap-loading" role="status" aria-live="polite">
+            <span className="cases-map-spinner" />
+          </div>
+        )}
         {actionsEl &&
           createPortal(
             <button
